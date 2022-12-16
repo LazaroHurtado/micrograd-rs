@@ -1,123 +1,181 @@
 use super::operation::{Backpropagation, Op};
-use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
+use num_traits::{Num, NumAssign, NumOps};
+use std::cell::RefCell;
+use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::rc::Rc;
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Value<'a, T> {
+pub struct Data<T> {
     pub data: T,
     pub grad: T,
-    operation: Option<Op<'a, T>>,
+    operation: Option<Op<T>>,
 }
 
-impl<T> Value<'_, T>
+#[derive(Debug, Eq, PartialEq)]
+pub struct Value<T>(pub Rc<RefCell<Data<T>>>);
+
+impl<T> Clone for Value<T> {
+    fn clone(&self) -> Self {
+        Value(self.0.clone())
+    }
+}
+
+impl<T> Value<T>
 where
-    T: Mul<Output = T> + Div<Output = T> + Neg<Output = T> + AddAssign + From<u8> + Copy,
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
 {
     pub fn new(data: T) -> Self {
-        Value {
+        let data = Data {
             data,
             grad: 0.into(),
             operation: None,
-        }
+        };
+
+        Value(Rc::new(RefCell::new(data)))
     }
 
-    pub fn backward(&mut self, initial: bool) {
+    pub fn with_op(data: T, operation: Option<Op<T>>) -> Self {
+        let data = Data {
+            data,
+            grad: 0.into(),
+            operation,
+        };
+
+        Value(Rc::new(RefCell::new(data)))
+    }
+
+    pub fn backward(&self, initial: bool) {
         if initial {
-            self.grad = 1.into();
+            self.0.borrow_mut().grad = 1.into();
         }
 
-        if let Some(ref mut op) = self.operation {
-            op.propagate(self.grad.clone());
-        }
-    }
+        let data = self.0.borrow();
 
-    pub fn params(&mut self) -> Vec<&'_ mut Value<'_, T>> {
-        let mut params = vec![self];
-
-        if let Some(ref mut op) = self.operation {
-            let (lhs, rhs) = match op {
-                Op::Add(lhs, rhs) => (lhs, rhs),
-                Op::Sub(lhs, rhs) => (lhs, rhs),
-                Op::Mul(lhs, rhs) => (lhs, rhs),
-                Op::Div(lhs, rhs) => (lhs, rhs),
-            };
-
-            params.append(&mut lhs.params());
-            params.append(&mut rhs.params());
-        }
-        params
-    }
-}
-
-impl<T: Add<Output = T> + From<u8> + Clone> From<T> for Value<'_, T> {
-    fn from(x: T) -> Self {
-        Value {
-            data: x,
-            grad: 0.into(),
-            operation: None,
+        let grad = data.grad.clone();
+        if let Some(op) = &data.operation {
+            op.propagate(grad);
         }
     }
 }
 
-impl<'a, T: Add<Output = T> + From<u8> + Copy> Add<&'a mut Value<'a, T>> for &'a mut Value<'a, T> {
-    type Output = Value<'a, T>;
+// impl<T: Add<Output = T> + From<u8> + Clone> From<T> for Value<T> {
+//     fn from(x: T) -> Self {
+//         Value {
+//             data: x,
+//             grad: 0.into(),
+//             operation: None,
+//         }
+//     }
+// }
 
-    fn add(self, other: &'a mut Value<'a, T>) -> Self::Output {
-        let data = self.data + other.data;
+impl<T> Add<Value<T>> for Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
 
-        let operation = Some(Op::Add(self, other));
+    fn add(self, other: Value<T>) -> Self::Output {
+        let data = self.0.borrow().data + other.0.borrow().data;
+        let operation = Some(Op::Add(self.clone(), other.clone()));
 
-        Value {
-            data,
-            grad: 0.into(),
-            operation,
-        }
+        Value::with_op(data, operation)
     }
 }
 
-impl<'a, T: Sub<Output = T> + From<u8> + Copy> Sub<&'a mut Value<'a, T>> for &'a mut Value<'a, T> {
-    type Output = Value<'a, T>;
+impl<T> Add<&Value<T>> for &Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
 
-    fn sub(self, other: &'a mut Value<'a, T>) -> Self::Output {
-        let data = self.data - other.data;
+    fn add(self, other: &Value<T>) -> Self::Output {
+        let data = self.0.borrow().data + other.0.borrow().data;
+        let operation = Some(Op::Add(self.clone(), other.clone()));
 
-        let operation = Some(Op::Sub(self, other));
-
-        Value {
-            data,
-            grad: 0.into(),
-            operation,
-        }
+        Value::with_op(data, operation)
     }
 }
 
-impl<'a, T: Mul<Output = T> + From<u8> + Copy> Mul<&'a mut Value<'a, T>> for &'a mut Value<'a, T> {
-    type Output = Value<'a, T>;
+impl<T> Sub<Value<T>> for Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
 
-    fn mul(self, other: &'a mut Value<'a, T>) -> Self::Output {
-        let data = self.data * other.data;
+    fn sub(self, other: Value<T>) -> Self::Output {
+        let data = self.0.borrow().data - other.0.borrow().data;
+        let operation = Some(Op::Sub(self.clone(), other.clone()));
 
-        let operation = Some(Op::Mul(self, other));
-
-        Value {
-            data,
-            grad: 0.into(),
-            operation,
-        }
+        Value::with_op(data, operation)
     }
 }
 
-impl<'a, T: Div<Output = T> + From<u8> + Copy> Div<&'a mut Value<'a, T>> for &'a mut Value<'a, T> {
-    type Output = Value<'a, T>;
+impl<T> Sub<&Value<T>> for &Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
 
-    fn div(self, other: &'a mut Value<'a, T>) -> Self::Output {
-        let data = self.data / other.data;
+    fn sub(self, other: &Value<T>) -> Self::Output {
+        let data = self.0.borrow().data - other.0.borrow().data;
+        let operation = Some(Op::Sub(self.clone(), other.clone()));
 
-        let operation = Some(Op::Div(self, other));
+        Value::with_op(data, operation)
+    }
+}
 
-        Value {
-            data,
-            grad: 0.into(),
-            operation,
-        }
+impl<T> Mul<Value<T>> for Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
+
+    fn mul(self, other: Value<T>) -> Self::Output {
+        let data = self.0.borrow().data * other.0.borrow().data;
+        let operation = Some(Op::Mul(self.clone(), other.clone()));
+
+        Value::with_op(data, operation)
+    }
+}
+
+impl<T> Mul<&Value<T>> for &Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
+
+    fn mul(self, other: &Value<T>) -> Self::Output {
+        let data = self.0.borrow().data * other.0.borrow().data;
+        let operation = Some(Op::Mul(self.clone(), other.clone()));
+
+        Value::with_op(data, operation)
+    }
+}
+
+impl<T> Div<Value<T>> for Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
+
+    fn div(self, other: Value<T>) -> Self::Output {
+        let data = self.0.borrow().data / other.0.borrow().data;
+        let operation = Some(Op::Div(self.clone(), other.clone()));
+
+        Value::with_op(data, operation)
+    }
+}
+
+impl<T> Div<&Value<T>> for &Value<T>
+where
+    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
+{
+    type Output = Value<T>;
+
+    fn div(self, other: &Value<T>) -> Self::Output {
+        let data = self.0.borrow().data / other.0.borrow().data;
+        let operation = Some(Op::Div(self.clone(), other.clone()));
+
+        Value::with_op(data, operation)
     }
 }
