@@ -1,61 +1,74 @@
-use super::value::Value;
-use num_traits::{Num, NumAssign, NumOps};
-use std::ops::Neg;
+use super::value::{Data, Value};
 
-pub trait Backpropagation<T> {
-    fn backward(&self);
-    fn propagate(&self, grad: T);
+pub trait Backpropagation {
+    fn propagate(&self, data: &Data);
 }
 
-#[derive(Debug, Eq, PartialEq)]
-pub enum Op<T> {
-    Add(Value<T>, Value<T>),
-    Sub(Value<T>, Value<T>),
-    Mul(Value<T>, Value<T>),
-    Div(Value<T>, Value<T>),
+#[derive(Debug, PartialEq)]
+pub enum Op {
+    Add(Value, Value),
+    // Sub(Value, Value),
+    Mul(Value, Value),
+    // Div(Value, Value),
+    Pow(Value, f64),
+    ReLu(Value),
+    TanH(Value),
 }
 
-impl<T> Backpropagation<T> for Op<T>
-where
-    T: Num + NumAssign + NumOps + Neg<Output = T> + From<u8> + Copy,
-{
-    fn backward(&self) {
-        let (lhs, rhs) = match self {
-            Op::Add(lhs, rhs) => (lhs, rhs),
-            Op::Sub(lhs, rhs) => (lhs, rhs),
-            Op::Mul(lhs, rhs) => (lhs, rhs),
-            Op::Div(lhs, rhs) => (lhs, rhs),
-        };
-        lhs.backward(false);
-        rhs.backward(false);
+impl Op {
+    pub fn equation(&self) -> Vec<Value> {
+        match self {
+            Op::Add(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
+            // Op::Sub(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
+            Op::Mul(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
+            // Op::Div(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
+            Op::Pow(value, _) => vec![value.clone()],
+            Op::ReLu(value) => vec![value.clone()],
+            Op::TanH(value) => vec![value.clone()],
+        }
     }
+}
 
-    fn propagate(&self, grad: T) {
+impl Backpropagation for Op {
+    fn propagate(&self, data: &Data) {
+        let value = data.value;
+        let grad = data.grad;
+
         match self {
             Op::Add(Value(lhs), Value(rhs)) => {
                 lhs.borrow_mut().grad += grad;
                 rhs.borrow_mut().grad += grad;
             }
-            Op::Sub(Value(lhs), Value(rhs)) => {
-                lhs.borrow_mut().grad += grad;
-                rhs.borrow_mut().grad += -grad;
-            }
+            // Op::Sub(Value(lhs), Value(rhs)) => {
+            //     lhs.borrow_mut().grad += grad;
+            //     rhs.borrow_mut().grad += -grad;
+            // }
             Op::Mul(Value(lhs), Value(rhs)) => {
                 let mut rhs_mut = rhs.borrow_mut();
                 let mut lhs_mut = lhs.borrow_mut();
 
-                lhs_mut.grad += rhs_mut.data * grad;
-                rhs_mut.grad += lhs_mut.data * grad;
+                lhs_mut.grad += rhs_mut.value * grad;
+                rhs_mut.grad += lhs_mut.value * grad;
             }
-            Op::Div(Value(lhs), Value(rhs)) => {
-                let mut rhs_mut = rhs.borrow_mut();
-                let mut lhs_mut = lhs.borrow_mut();
+            // Op::Div(Value(lhs), Value(rhs)) => {
+            //     let mut rhs_mut = rhs.borrow_mut();
+            //     let mut lhs_mut = lhs.borrow_mut();
+            //
+            //     lhs_mut.grad += grad / rhs_mut.value;
+            //     rhs_mut.grad += (-lhs_mut.value * grad) / (rhs_mut.value.powf(2.0));
+            // }
+            Op::Pow(Value(variable), exponent) => {
+                let mut variable_mut = variable.borrow_mut();
 
-                lhs_mut.grad = grad / rhs_mut.data;
-                rhs_mut.grad = (-lhs_mut.data * grad) / (rhs_mut.data * rhs_mut.data);
+                variable_mut.grad += exponent * (variable_mut.value.powf(exponent - 1.0)) * grad;
+            }
+            Op::ReLu(Value(unactivated)) => {
+                let one_if_greater_than_zero = value.ceil().min(1.0);
+                unactivated.borrow_mut().grad += one_if_greater_than_zero * grad;
+            }
+            Op::TanH(Value(unactivated)) => {
+                unactivated.borrow_mut().grad += (1.0 - value.powf(2.0)) * grad;
             }
         };
-
-        self.backward();
     }
 }
