@@ -3,7 +3,7 @@ use std::{
     cell::RefCell,
     fmt,
     iter::Sum,
-    ops::{Add, Div, Mul, Sub},
+    ops::{Add, Div, Mul, Neg, Sub},
     rc::Rc,
 };
 
@@ -97,9 +97,12 @@ impl Value {
     }
 }
 
-impl From<f64> for Value {
-    fn from(value: f64) -> Self {
-        Value::new(value)
+impl<T> From<T> for Value
+where
+    T: Into<f64>,
+{
+    fn from(value: T) -> Self {
+        Value::new(value.into())
     }
 }
 
@@ -112,12 +115,29 @@ impl Sum<Self> for Value {
     }
 }
 
-impl Add<Value> for Value {
+impl Neg for Value {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        self.0.borrow_mut().value *= -1.0;
+        self
+    }
+}
+
+impl Neg for &Value {
     type Output = Value;
 
-    fn add(self, other: Value) -> Self::Output {
-        let value = self.value() + other.value();
-        let operation = Op::Add(self.clone(), other.clone());
+    fn neg(self) -> Self::Output {
+        -self.clone()
+    }
+}
+
+impl Add<Value> for Value {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let value = self.value() + rhs.value();
+        let operation = Op::Add(self.clone(), rhs.clone());
 
         Value::with_op(value, operation)
     }
@@ -126,44 +146,74 @@ impl Add<Value> for Value {
 impl Add<&Value> for &Value {
     type Output = Value;
 
-    fn add(self, other: &Value) -> Self::Output {
-        let value = self.value() + other.value();
-        let operation = Op::Add(self.clone(), other.clone());
+    fn add(self, rhs: &Value) -> Self::Output {
+        let value = self.value() + rhs.value();
+        let operation = Op::Add(self.clone(), rhs.clone());
 
         Value::with_op(value, operation)
     }
 }
 
-impl Sub<Value> for Value {
-    type Output = Value;
+impl<T> Add<T> for Value
+where
+    T: Into<f64>,
+{
+    type Output = Self;
 
-    fn sub(self, other: Value) -> Self::Output {
-        // let value = self.value() - other.value();
-        // let operation = Op::Sub(self.clone(), other.clone());
-        //
-        // Value::with_op(value, operation)
-        self + (other * Value::new(-1.0))
+    fn add(self, other: T) -> Self::Output {
+        let rhs = Value::from(other);
+        let value = self.value() + rhs.value();
+        let operation = Op::Add(self.clone(), rhs.clone());
+
+        Value::with_op(value, operation)
     }
 }
 
-impl Sub<&Value> for &Value {
+impl<T> Add<&T> for &Value
+where
+    T: Into<f64> + Copy,
+{
     type Output = Value;
 
-    fn sub(self, other: &Value) -> Self::Output {
-        // let value = self.value() - other.value();
-        // let operation = Op::Sub(self.clone(), other.clone());
-        //
-        // Value::with_op(value, operation)
-        self + &(other * &Value::new(-1.0))
+    fn add(self, other: &T) -> Self::Output {
+        let rhs = Value::from(*other);
+        let value = self.value() + rhs.value();
+        let operation = Op::Add(self.clone(), rhs.clone());
+
+        Value::with_op(value, operation)
+    }
+}
+
+impl<T> Sub<T> for Value
+where
+    Self: Add<T, Output = Self>,
+    T: Neg<Output = T>,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: T) -> Self::Output {
+        self + (-rhs)
+    }
+}
+
+impl<'a, T> Sub<&'a T> for &'a Value
+where
+    Value: Add<T, Output = Value>,
+    &'a T: Neg<Output = T>,
+{
+    type Output = Value;
+
+    fn sub(self, rhs: &'a T) -> Self::Output {
+        self.clone() + (-rhs)
     }
 }
 
 impl Mul<Value> for Value {
-    type Output = Value;
+    type Output = Self;
 
-    fn mul(self, other: Value) -> Self::Output {
-        let value = self.value() * other.value();
-        let operation = Op::Mul(self.clone(), other.clone());
+    fn mul(self, rhs: Self) -> Self::Output {
+        let value = self.value() * rhs.value();
+        let operation = Op::Mul(self.clone(), rhs.clone());
 
         Value::with_op(value, operation)
     }
@@ -172,35 +222,81 @@ impl Mul<Value> for Value {
 impl Mul<&Value> for &Value {
     type Output = Value;
 
-    fn mul(self, other: &Value) -> Self::Output {
-        let value = self.value() * other.value();
-        let operation = Op::Mul(self.clone(), other.clone());
+    fn mul(self, rhs: &Value) -> Self::Output {
+        let value = self.value() * rhs.value();
+        let operation = Op::Mul(self.clone(), rhs.clone());
+
+        Value::with_op(value, operation)
+    }
+}
+
+impl<T> Mul<T> for Value
+where
+    T: Into<f64>,
+{
+    type Output = Self;
+
+    fn mul(self, other: T) -> Self::Output {
+        let rhs = Value::from(other);
+        let value = self.value() * rhs.value();
+        let operation = Op::Mul(self.clone(), rhs.clone());
+
+        Value::with_op(value, operation)
+    }
+}
+
+impl<T> Mul<&T> for &Value
+where
+    T: Into<f64> + Copy,
+{
+    type Output = Value;
+
+    fn mul(self, other: &T) -> Self::Output {
+        let rhs = Value::from(*other);
+        let value = self.value() * rhs.value();
+        let operation = Op::Mul(self.clone(), rhs.clone());
 
         Value::with_op(value, operation)
     }
 }
 
 impl Div<Value> for Value {
-    type Output = Value;
+    type Output = Self;
 
-    fn div(self, other: Value) -> Self::Output {
-        // let value = self.value() / other.value();
-        // let operation = Op::Div(self.clone(), other.clone());
-        //
-        // Value::with_op(value, operation)
-        self * other.powf(-1.0)
+    fn div(self, rhs: Self) -> Self::Output {
+        self * rhs.powf(-1.0)
     }
 }
 
 impl Div<&Value> for &Value {
     type Output = Value;
 
-    fn div(self, other: &Value) -> Self::Output {
-        // let value = self.value() / other.value();
-        // let operation = Op::Div(self.clone(), other.clone());
-        //
-        // Value::with_op(value, operation)
-        self * &other.powf(-1.0)
+    fn div(self, rhs: &Value) -> Self::Output {
+        self * &rhs.powf(-1.0)
+    }
+}
+
+impl<T> Div<T> for Value
+where
+    T: Into<f64>,
+{
+    type Output = Self;
+
+    fn div(self, other: T) -> Self::Output {
+        let rhs = Value::from(other);
+        self * rhs.powf(-1.0)
+    }
+}
+
+impl<T> Div<&T> for &Value
+where
+    T: Into<f64> + Copy,
+{
+    type Output = Value;
+
+    fn div(self, other: &T) -> Self::Output {
+        let rhs = Value::from(*other);
+        self * &rhs.powf(-1.0)
     }
 }
 
