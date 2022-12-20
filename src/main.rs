@@ -11,24 +11,36 @@ use std::iter::zip;
 use value::Value;
 
 // fn value_test() {
-//     let x1 = Value::new(2.0);
-//     let x2 = Value::new(0.0);
+//     let x = Value::from(3.0);
+//     println!("f(x) = x^3");
 //
-//     let w1 = Value::new(-3.0);
-//     let w2 = Value::new(1.0);
+//     let y = &x.powf(3.0);
+//     println!("f(3) = 3^3 = {:?}", y.value());
+//     y.backward();
 //
-//     let b = Value::new(6.8813735870195432);
+//     let dy = &x.grad();
+//     println!("f'(3) = 3*(3)^2 = {:?}", dy.value());
+//     x.zero_grad();
+//     dy.backward();
 //
-//     let x1w1 = &x1 * &w1;
-//     let x2w2 = &x2 * &w2;
+//     let d2y = &x.grad();
+//     println!("f''(3) = 6*(3) {:?}", d2y.value());
+//     x.zero_grad();
+//     d2y.backward();
 //
-//     let x1w1x2w2 = &x1w1 + &x2w2;
+//     let d3y = &x.grad();
+//     println!("f'''(3) = 6 = {:?}", d3y.value());
+//     x.zero_grad();
+//     d3y.backward();
 //
-//     let n = &x1w1x2w2 + &b;
-//     println!("{:?}", n);
+//     let d4y = &x.grad();
+//     println!("f''''(3) = 0 = {:?}", d4y.value());
+//     x.zero_grad();
 // }
 
 fn main() {
+    // value_test();
+
     let mlp: MLP = MLP::new(vec![
         Layer::new(3, 4, Some(Activation::TanH)),
         Layer::new(4, 4, Some(Activation::TanH)),
@@ -61,8 +73,9 @@ fn main() {
         loss.backward();
 
         for param in mlp.parameters().iter() {
+            let grad = param.grad();
             let mut param_mut = param.0.borrow_mut();
-            param_mut.value += -0.1 * param_mut.grad;
+            param_mut.value += grad.value() * -0.1;
         }
 
         println!("[EPOCH-{:?}] Loss: {:?}", epoch, loss.value());

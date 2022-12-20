@@ -3,16 +3,30 @@ use std::{
     cell::RefCell,
     fmt,
     iter::Sum,
-    ops::{Add, Div, Mul, Neg, Sub},
+    ops::{Add, AddAssign, Div, Mul, Neg, Sub},
     rc::Rc,
 };
 
 #[derive(PartialEq)]
 pub struct Data {
     pub value: f64,
-    pub grad: f64,
+    grad: Option<Value>,
     operation: Option<Op>,
     back_pass: bool,
+}
+
+impl Data {
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+
+    pub fn grad(&mut self) -> Value {
+        self.grad_mut().clone()
+    }
+
+    pub fn grad_mut(&mut self) -> &mut Value {
+        self.grad.get_or_insert(Value::new(0.0))
+    }
 }
 
 #[derive(PartialEq)]
@@ -28,7 +42,7 @@ impl Value {
     pub fn new(value: f64) -> Self {
         let data = Data {
             value,
-            grad: 0.0,
+            grad: None,
             operation: None,
             back_pass: false,
         };
@@ -39,7 +53,7 @@ impl Value {
     pub fn with_op(value: f64, operation: Op) -> Self {
         let data = Data {
             value,
-            grad: 0.0,
+            grad: None,
             operation: Some(operation),
             back_pass: false,
         };
@@ -48,21 +62,25 @@ impl Value {
     }
 
     pub fn value(&self) -> f64 {
-        self.0.borrow().value
+        self.0.borrow().value()
     }
 
-    pub fn grad(&self) -> f64 {
-        self.0.borrow().grad
+    pub fn grad(&self) -> Self {
+        let mut data = self.0.borrow_mut();
+        data.grad()
     }
 
     pub fn backward(&self) {
         let topo_order = self.topo_sort();
-        self.0.borrow_mut().grad = 1.0;
+        self.0.borrow_mut().grad = Some(Value::new(1.0));
 
-        topo_order.iter().rev().for_each(|value| {
-            let data = value.0.borrow();
+        topo_order.iter().rev().for_each(|source| {
+            let mut data = source.0.borrow_mut();
+            let value = data.value();
+            let grad = data.grad();
+
             if let Some(op) = &data.operation {
-                op.propagate(&data)
+                op.propagate(&value, &grad)
             }
         });
     }
@@ -87,12 +105,12 @@ impl Value {
 
     pub fn zero_grad(&self) {
         let mut data = self.0.borrow_mut();
-        data.grad = 0.0;
+        data.grad = None;
         data.back_pass = false;
     }
 
     pub fn powf(&self, exponent: f64) -> Self {
-        let value = self.value();
+        let value = self.value().powf(exponent);
         Value::with_op(value, Op::Pow(self.clone(), exponent))
     }
 }
@@ -112,6 +130,18 @@ impl Sum<Self> for Value {
         I: Iterator<Item = Self>,
     {
         iter.fold(Value::new(0.0), |sum, other| sum + other)
+    }
+}
+
+impl AddAssign for Value {
+    fn add_assign(&mut self, other: Self) {
+        *self = self.clone() + other;
+    }
+}
+
+impl AddAssign<&Value> for Value {
+    fn add_assign(&mut self, other: &Value) {
+        *self = self.clone() + other.clone();
     }
 }
 
@@ -302,6 +332,11 @@ where
 
 impl fmt::Debug for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Value(data: {}, grad: {})", self.value(), self.grad(),)
+        write!(
+            f,
+            "Value(data: {}, grad: {:?})",
+            self.value(),
+            self.0.borrow().grad,
+        )
     }
 }
