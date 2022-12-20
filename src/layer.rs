@@ -1,4 +1,5 @@
-use super::neuron::{Activation, Neuron};
+use super::mlp::Module;
+use super::neuron::Neuron;
 use super::value::Value;
 use std::fmt;
 
@@ -7,13 +8,15 @@ pub struct Layer {
 }
 
 impl Layer {
-    pub fn new(nin: usize, nout: usize, activation_fn: Option<Activation>) -> Self {
-        let neurons: Vec<Neuron> = (0..nout).map(|_| Neuron::new(nin, activation_fn)).collect();
+    pub fn new(nin: usize, nout: usize) -> Self {
+        let neurons: Vec<Neuron> = (0..nout).map(|_| Neuron::new(nin)).collect();
 
         Layer { neurons }
     }
+}
 
-    pub fn parameters(&self) -> Vec<Value> {
+impl Module for Layer {
+    fn parameters(&self) -> Vec<Value> {
         self.neurons
             .iter()
             .map(|neuron| neuron.parameters())
@@ -21,7 +24,7 @@ impl Layer {
             .collect()
     }
 
-    pub fn forward(&self, input: Vec<Value>) -> Vec<Value> {
+    fn forward(&self, input: Vec<Value>) -> Vec<Value> {
         self.neurons
             .iter()
             .map(|neuron| neuron.call(input.clone()))

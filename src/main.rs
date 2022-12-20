@@ -42,9 +42,12 @@ fn main() {
     // value_test();
 
     let mlp: MLP = MLP::new(vec![
-        Layer::new(3, 4, Some(Activation::TanH)),
-        Layer::new(4, 4, Some(Activation::TanH)),
-        Layer::new(4, 1, Some(Activation::TanH)),
+        Box::new(Layer::new(3, 4)),
+        Box::new(Activation::TanH),
+        Box::new(Layer::new(4, 4)),
+        Box::new(Activation::TanH),
+        Box::new(Layer::new(4, 1)),
+        Box::new(Activation::TanH),
     ]);
 
     let xs = vec![

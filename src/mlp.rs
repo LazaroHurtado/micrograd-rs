@@ -1,13 +1,19 @@
-use super::layer::Layer;
 use super::value::Value;
 use std::fmt;
 
+pub trait Module: fmt::Debug {
+    fn parameters(&self) -> Vec<Value> {
+        vec![]
+    }
+    fn forward(&self, input: Vec<Value>) -> Vec<Value>;
+}
+
 pub struct MLP {
-    layers: Vec<Layer>,
+    layers: Vec<Box<dyn Module>>,
 }
 
 impl MLP {
-    pub fn new(layers: Vec<Layer>) -> Self {
+    pub fn new(layers: Vec<Box<dyn Module>>) -> Self {
         MLP { layers }
     }
 

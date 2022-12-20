@@ -1,9 +1,10 @@
+use super::mlp::Module;
 use super::operation::Op;
 use super::value::Value;
 use rand::distributions::{Distribution, Uniform};
 use std::{f64::consts::E, fmt, iter::zip};
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum Activation {
     ReLu,
     TanH,
@@ -26,14 +27,22 @@ impl Activation {
     }
 }
 
+impl Module for Activation {
+    fn forward(&self, outputs: Vec<Value>) -> Vec<Value> {
+        outputs
+            .into_iter()
+            .map(|neuron_output| self.activate(neuron_output))
+            .collect()
+    }
+}
+
 pub struct Neuron {
     weights: Vec<Value>,
     bias: Value,
-    activation: Option<Activation>,
 }
 
 impl Neuron {
-    pub fn new(nin: usize, activation: Option<Activation>) -> Self {
+    pub fn new(nin: usize) -> Self {
         let uniform = Uniform::from(-1.0..=1.0);
         let mut rng = rand::thread_rng();
 
@@ -47,11 +56,7 @@ impl Neuron {
         let sample = uniform.sample(&mut rng);
         let bias = Value::new(sample);
 
-        Neuron {
-            weights,
-            bias,
-            activation,
-        }
+        Neuron { weights, bias }
     }
 
     pub fn parameters(&self) -> Vec<Value> {
@@ -61,17 +66,13 @@ impl Neuron {
         params
     }
 
-    pub fn call(&self, input: Vec<Value>) -> Value {
-        let sum: Value = zip(input.clone(), self.weights.clone())
+    pub fn call(&self, inputs: Vec<Value>) -> Value {
+        let sum: Value = zip(inputs.clone(), self.weights.clone())
             .map(|(x, w)| x * w)
             .sum();
 
         let output = &sum + &self.bias;
-
-        match &self.activation {
-            Some(activation) => activation.activate(output),
-            None => output,
-        }
+        output
     }
 }
 
