@@ -1,12 +1,13 @@
+mod activation;
 mod layer;
 mod mlp;
 mod neuron;
 mod operation;
 mod value;
 
+use activation::Activation;
 use layer::Layer;
 use mlp::MLP;
-use neuron::Activation;
 use std::iter::zip;
 use value::Value;
 

@@ -41,6 +41,7 @@ impl Backpropagation for Op {
             }
             Op::Pow(variable, exponent) => {
                 let derivative = &variable.powf(exponent - 1.0) * exponent;
+
                 *variable.0.borrow_mut().grad_mut() += grad * &derivative;
             }
             Op::ReLu(Value(unactivated)) => {

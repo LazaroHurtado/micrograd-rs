@@ -1,40 +1,6 @@
-use super::mlp::Module;
-use super::operation::Op;
 use super::value::Value;
 use rand::distributions::{Distribution, Uniform};
-use std::{f64::consts::E, fmt, iter::zip};
-
-#[derive(Debug, Copy, Clone)]
-pub enum Activation {
-    ReLu,
-    TanH,
-}
-
-impl Activation {
-    pub fn activate(&self, value: Value) -> Value {
-        let data = value.0.borrow();
-
-        match self {
-            Self::ReLu => {
-                let activated = data.value.max(0.0);
-                Value::with_op(activated, Op::ReLu(value.clone()))
-            }
-            Self::TanH => {
-                let activated = (E.powf(2.0 * data.value) - 1.0) / (E.powf(2.0 * data.value) + 1.0);
-                Value::with_op(activated, Op::TanH(value.clone()))
-            }
-        }
-    }
-}
-
-impl Module for Activation {
-    fn forward(&self, outputs: Vec<Value>) -> Vec<Value> {
-        outputs
-            .into_iter()
-            .map(|neuron_output| self.activate(neuron_output))
-            .collect()
-    }
-}
+use std::{fmt, iter::zip};
 
 pub struct Neuron {
     weights: Vec<Value>,
