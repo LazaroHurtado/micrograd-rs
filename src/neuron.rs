@@ -1,9 +1,11 @@
+use super::tensor::{DotProd, Tensor};
 use super::value::Value;
+use ndarray::Ix1;
 use rand::distributions::{Distribution, Uniform};
-use std::{fmt, iter::zip};
+use std::fmt;
 
 pub struct Neuron {
-    weights: Vec<Value>,
+    weights: Tensor<Ix1>,
     bias: Value,
 }
 
@@ -12,12 +14,14 @@ impl Neuron {
         let uniform = Uniform::from(-1.0..=1.0);
         let mut rng = rand::thread_rng();
 
-        let weights: Vec<Value> = (0..nin)
-            .map(|_| {
-                let sample = uniform.sample(&mut rng);
-                Value::new(sample)
-            })
-            .collect();
+        let weights: Tensor<Ix1> = Tensor::from(
+            (0..nin)
+                .map(|_| {
+                    let sample = uniform.sample(&mut rng);
+                    Value::new(sample)
+                })
+                .collect::<Vec<Value>>(),
+        );
 
         let sample = uniform.sample(&mut rng);
         let bias = Value::new(sample);
@@ -27,15 +31,13 @@ impl Neuron {
 
     pub fn parameters(&self) -> Vec<Value> {
         let mut params = vec![self.bias.clone()];
-        params.append(&mut self.weights.clone());
+        params.append(&mut self.weights.to_vec());
 
         params
     }
 
-    pub fn call(&self, inputs: Vec<Value>) -> Value {
-        let sum: Value = zip(inputs.clone(), self.weights.clone())
-            .map(|(x, w)| x * w)
-            .sum();
+    pub fn call(&self, inputs: Tensor<Ix1>) -> Value {
+        let sum: Value = inputs.dot(&self.weights);
 
         let output = &sum + &self.bias;
         output

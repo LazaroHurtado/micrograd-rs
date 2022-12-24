@@ -1,6 +1,8 @@
 use super::mlp::Module;
 use super::neuron::Neuron;
+use super::tensor::Tensor;
 use super::value::Value;
+use ndarray::Ix1;
 use std::fmt;
 
 pub struct Layer {
@@ -24,7 +26,7 @@ impl Module for Layer {
             .collect()
     }
 
-    fn forward(&self, input: Vec<Value>) -> Vec<Value> {
+    fn forward(&self, input: Tensor<Ix1>) -> Tensor<Ix1> {
         self.neurons
             .iter()
             .map(|neuron| neuron.call(input.clone()))

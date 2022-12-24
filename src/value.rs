@@ -1,4 +1,5 @@
 use super::operation::{Backpropagation, Op};
+use num_traits::{One, Zero};
 use std::{
     cell::RefCell,
     fmt,
@@ -7,7 +8,25 @@ use std::{
     rc::Rc,
 };
 
-#[derive(PartialEq)]
+#[macro_export]
+macro_rules! values {
+    [$($x: expr),*] => {{
+        let mut values = vec![];
+
+        $(
+            values.push(Value::from($x));
+        )*
+        values
+    }};
+}
+
+#[macro_export]
+macro_rules! val {
+    ($x: expr) => {
+        Value::from($x)
+    };
+}
+
 pub struct Data {
     pub value: f64,
     grad: Option<Value>,
@@ -29,14 +48,7 @@ impl Data {
     }
 }
 
-#[derive(PartialEq)]
 pub struct Value(pub Rc<RefCell<Data>>);
-
-impl Clone for Value {
-    fn clone(&self) -> Self {
-        Value(self.0.clone())
-    }
-}
 
 impl Value {
     pub fn new(value: f64) -> Self {
@@ -59,6 +71,14 @@ impl Value {
         };
 
         Value(Rc::new(RefCell::new(data)))
+    }
+
+    pub fn zero() -> Self {
+        Value::from(0.0)
+    }
+
+    pub fn one() -> Self {
+        Value::from(1.0)
     }
 
     pub fn value(&self) -> f64 {
@@ -112,6 +132,46 @@ impl Value {
     pub fn powf(&self, exponent: f64) -> Self {
         let value = self.value().powf(exponent);
         Value::with_op(value, Op::Pow(self.clone(), exponent))
+    }
+}
+
+impl Clone for Value {
+    fn clone(&self) -> Self {
+        Value(self.0.clone())
+    }
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        self.value() == other.value()
+    }
+}
+
+impl Zero for Value {
+    fn zero() -> Self {
+        Value::zero()
+    }
+
+    fn set_zero(&mut self) {
+        *self = Value::zero()
+    }
+
+    fn is_zero(&self) -> bool {
+        *self == Value::zero()
+    }
+}
+
+impl One for Value {
+    fn one() -> Self {
+        Value::one()
+    }
+
+    fn set_one(&mut self) {
+        *self = Value::one()
+    }
+
+    fn is_one(&self) -> bool {
+        *self == Value::one()
     }
 }
 
@@ -338,5 +398,56 @@ impl fmt::Debug for Value {
             self.value(),
             self.0.borrow().grad,
         )
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn nth_derivative(n: usize, x: Value, y: Value) -> f64 {
+        (0..n)
+            .fold(y, |d: Value, _| {
+                x.zero_grad();
+                d.backward();
+                x.grad()
+            })
+            .value()
+    }
+
+    #[test]
+    fn first_derivative() {
+        let x = Value::from(3.0);
+        let y = x.powf(3.0);
+
+        let actual_derivative = 3.0 * (3.0_f64).powf(2.0);
+        assert_eq!(nth_derivative(1, x, y), actual_derivative);
+    }
+
+    #[test]
+    fn second_derivative() {
+        let x = Value::from(3.0);
+        let y = x.powf(3.0);
+
+        let actual_derivative = 6.0 * 3.0;
+        assert_eq!(nth_derivative(2, x, y), actual_derivative);
+    }
+
+    #[test]
+    fn third_derivative() {
+        let x = Value::from(3.0);
+        let y = x.powf(3.0);
+
+        let actual_derivative = 6.0;
+        assert_eq!(nth_derivative(3, x, y), actual_derivative);
+    }
+
+    #[test]
+    fn fourth_derivative() {
+        let x = Value::from(3.0);
+        let y = x.powf(3.0);
+
+        let actual_derivative = 0.0;
+        assert_eq!(nth_derivative(4, x, y), actual_derivative);
     }
 }

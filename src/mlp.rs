@@ -1,11 +1,13 @@
+use super::tensor::Tensor;
 use super::value::Value;
+use ndarray::{Dimension, Ix1, Ix2};
 use std::fmt;
 
 pub trait Module: fmt::Debug {
     fn parameters(&self) -> Vec<Value> {
         vec![]
     }
-    fn forward(&self, input: Vec<Value>) -> Vec<Value>;
+    fn forward(&self, input: Tensor<Ix1>) -> Tensor<Ix1>;
 }
 
 pub struct MLP {
@@ -29,11 +31,23 @@ impl MLP {
         self.parameters().iter().for_each(|value| value.zero_grad());
     }
 
-    pub fn forward(&self, inputs: Vec<f64>) -> Vec<Value> {
-        let input_values: Vec<Value> = inputs.into_iter().map(|input| input.into()).collect();
+    pub fn forward(&self, inputs: Tensor<Ix1>) -> Tensor<Ix1> {
         self.layers
             .iter()
-            .fold(input_values, |output, layer| layer.forward(output))
+            .fold(inputs, |output, layer| layer.forward(output))
+    }
+
+    pub fn forward_batch<D: Dimension>(&self, batches: Tensor<Ix2>) -> Tensor<D> {
+        let mut outputs = vec![];
+
+        for batch in batches.rows() {
+            let batch_output = self.forward(batch.to_owned());
+            outputs.append(&mut batch_output.to_vec());
+        }
+
+        Tensor::from_vec(outputs)
+            .into_dimensionality::<D>()
+            .unwrap()
     }
 }
 

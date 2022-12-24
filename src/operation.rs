@@ -4,7 +4,6 @@ pub trait Backpropagation {
     fn propagate(&self, value: &f64, grad: &Value);
 }
 
-#[derive(Debug, PartialEq)]
 pub enum Op {
     Add(Value, Value),
     Mul(Value, Value),

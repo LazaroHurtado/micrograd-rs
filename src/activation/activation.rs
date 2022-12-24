@@ -1,5 +1,7 @@
 use crate::mlp::Module;
+use crate::tensor::Tensor;
 use crate::value::Value;
+use ndarray::Ix1;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Activation {
@@ -17,10 +19,7 @@ impl Activation {
 }
 
 impl Module for Activation {
-    fn forward(&self, outputs: Vec<Value>) -> Vec<Value> {
-        outputs
-            .into_iter()
-            .map(|neuron_output| self.activate(neuron_output))
-            .collect()
+    fn forward(&self, outputs: Tensor<Ix1>) -> Tensor<Ix1> {
+        outputs.map(|neuron_output| self.activate(neuron_output.clone()))
     }
 }
