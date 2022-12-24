@@ -1,7 +1,6 @@
 mod activation;
-mod layer;
 mod mlp;
-mod neuron;
+mod modules;
 mod operation;
 mod prelude;
 mod tensor;
@@ -9,17 +8,17 @@ mod utils;
 mod value;
 
 use activation::Activation;
-use layer::Layer;
 use mlp::MLP;
+use modules::Linear;
 use prelude::*;
 
 fn main() {
     let mlp: MLP = MLP::new(vec![
-        Box::new(Layer::new(3, 4)),
+        Box::new(Linear::new(3, 4)),
         Box::new(Activation::TanH),
-        Box::new(Layer::new(4, 4)),
+        Box::new(Linear::new(4, 4)),
         Box::new(Activation::TanH),
-        Box::new(Layer::new(4, 1)),
+        Box::new(Linear::new(4, 1)),
         Box::new(Activation::TanH),
     ]);
 

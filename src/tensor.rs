@@ -26,6 +26,30 @@ where
     }
 }
 
+impl<S> DotProd<ArrayBase<S, Ix2>> for ArrayBase<S, Ix1>
+where
+    S: Data<Elem = Value>,
+{
+    type Output = Tensor<Ix1>;
+
+    fn dot(&self, b: &ArrayBase<S, Ix2>) -> Self::Output {
+        let a = self.view();
+        let b = b.view();
+
+        let (n, _) = b.dim();
+        assert!(a.dim() == n);
+
+        let a_t = a.t();
+
+        let mut result = vec![];
+        for col in b.columns() {
+            result.push(a_t.dot(&col));
+        }
+
+        Tensor::<Ix1>::from_vec(result)
+    }
+}
+
 impl<S> DotProd<ArrayBase<S, Ix2>> for ArrayBase<S, Ix2>
 where
     S: Data<Elem = Value>,
@@ -45,6 +69,37 @@ where
         for row in a.rows() {
             for col in b.columns() {
                 result.push(row.dot(&col));
+            }
+        }
+
+        Tensor::from_shape_vec((m, n), result).unwrap()
+    }
+}
+
+impl<S> DotProd<ArrayBase<S, Ix1>> for ArrayBase<S, Ix2>
+where
+    S: Data<Elem = Value>,
+{
+    type Output = Tensor<Ix2>;
+
+    fn dot(&self, b: &ArrayBase<S, Ix1>) -> Self::Output {
+        let a = self.view();
+        let b = b.view();
+
+        let (m, k) = a.dim();
+        let n = b.dim();
+
+        if k != 1 || m.checked_mul(n).is_none() {
+            panic!("Could not multiply");
+        }
+
+        let b_elems = b.to_vec();
+        let mut result = vec![];
+
+        for row in a.rows() {
+            let x = row.get(0).unwrap();
+            for elem in b_elems.iter() {
+                result.push(elem * x);
             }
         }
 
