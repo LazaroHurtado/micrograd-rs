@@ -1,4 +1,4 @@
-use super::value::Value;
+use crate::prelude::*;
 use ndarray::{ArrayBase, Data, Ix1, Ix2, OwnedRepr};
 use std::iter::zip;
 

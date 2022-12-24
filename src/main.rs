@@ -3,15 +3,15 @@ mod layer;
 mod mlp;
 mod neuron;
 mod operation;
+mod prelude;
 mod tensor;
+mod utils;
 mod value;
 
 use activation::Activation;
 use layer::Layer;
 use mlp::MLP;
-use ndarray::{array as tensor, Ix1};
-use tensor::Tensor;
-use value::Value;
+use prelude::*;
 
 fn main() {
     let mlp: MLP = MLP::new(vec![

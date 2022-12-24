@@ -1,7 +1,5 @@
-use super::tensor::{DotProd, Tensor};
-use super::value::Value;
-use ndarray::Ix1;
-use rand::distributions::{Distribution, Uniform};
+use super::utils::WeightInit;
+use crate::prelude::*;
 use std::fmt;
 
 pub struct Neuron {
@@ -10,20 +8,9 @@ pub struct Neuron {
 }
 
 impl Neuron {
-    pub fn new(nin: usize) -> Self {
-        let uniform = Uniform::from(-1.0..=1.0);
-        let mut rng = rand::thread_rng();
-        let mut sample: f64 = 0.0;
-
-        let weights: Tensor<Ix1> = Tensor::from(
-            (0..nin)
-                .map(|_| {
-                    sample = uniform.sample(&mut rng);
-                    Value::new(sample)
-                })
-                .collect::<Vec<Value>>(),
-        );
-
+    pub fn new(nin: usize, nout: usize) -> Self {
+        let weights =
+            Tensor::from_shape_simple_fn(nin, || WeightInit::GlorotUniform.sample([nin, nout]));
         let bias = Value::zero();
 
         Neuron { weights, bias }

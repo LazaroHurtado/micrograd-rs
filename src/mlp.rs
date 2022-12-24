@@ -1,6 +1,4 @@
-use super::tensor::Tensor;
-use super::value::Value;
-use ndarray::{Dimension, Ix1, Ix2};
+use crate::prelude::*;
 use std::fmt;
 
 pub trait Module: fmt::Debug {

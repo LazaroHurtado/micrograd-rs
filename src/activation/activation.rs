@@ -1,7 +1,5 @@
 use crate::mlp::Module;
-use crate::tensor::Tensor;
-use crate::value::Value;
-use ndarray::Ix1;
+use crate::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Activation {

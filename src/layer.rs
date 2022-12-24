@@ -1,8 +1,6 @@
 use super::mlp::Module;
 use super::neuron::Neuron;
-use super::tensor::Tensor;
-use super::value::Value;
-use ndarray::Ix1;
+use crate::prelude::*;
 use std::fmt;
 
 pub struct Layer {
@@ -11,7 +9,7 @@ pub struct Layer {
 
 impl Layer {
     pub fn new(nin: usize, nout: usize) -> Self {
-        let neurons: Vec<Neuron> = (0..nout).map(|_| Neuron::new(nin)).collect();
+        let neurons: Vec<Neuron> = (0..nout).map(|_| Neuron::new(nin, nout)).collect();
 
         Layer { neurons }
     }
