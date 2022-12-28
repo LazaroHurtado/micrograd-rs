@@ -1,5 +1,4 @@
 mod activation;
-mod mlp;
 mod modules;
 mod operation;
 mod prelude;
@@ -8,12 +7,11 @@ mod utils;
 mod value;
 
 use activation::Activation;
-use mlp::MLP;
-use modules::Linear;
+use modules::{Linear, Sequential};
 use prelude::*;
 
 fn main() {
-    let mlp: MLP = MLP::new(vec![
+    let feedforward = Sequential::new(vec![
         Box::new(Linear::new(3, 4)),
         Box::new(Activation::TanH),
         Box::new(Linear::new(4, 4)),
@@ -32,13 +30,17 @@ fn main() {
     let mut ypred: Tensor<Ix1> = Tensor::zeros(4);
 
     for epoch in 0..20 {
-        ypred = mlp.forward_batch::<Ix1>(xs.clone());
+        ypred = feedforward
+            .forward_batch(xs.clone())
+            .to_shape(4)
+            .unwrap()
+            .to_owned();
         let loss: Value = (ypred.clone() - ys.clone()).map(|val| val.powf(2.0)).sum();
 
-        mlp.zero_grad();
+        feedforward.zero_grad();
         loss.backward();
 
-        for param in mlp.parameters().iter() {
+        for param in feedforward.parameters().iter() {
             let grad = param.grad();
             let mut param_mut = param.0.borrow_mut();
             param_mut.value += grad.value() * -0.1;

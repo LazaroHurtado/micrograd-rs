@@ -1,4 +1,4 @@
-use crate::mlp::Module;
+use crate::modules::Module;
 use crate::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
@@ -17,7 +17,9 @@ impl Activation {
 }
 
 impl Module for Activation {
-    fn forward(&self, outputs: Tensor<Ix1>) -> Tensor<Ix1> {
+    type Dim = Ix1;
+
+    fn forward(&self, outputs: Tensor<Self::Dim>) -> Tensor<Self::Dim> {
         outputs.map(|neuron_output| self.activate(neuron_output.clone()))
     }
 }

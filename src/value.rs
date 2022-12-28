@@ -1,4 +1,5 @@
 use super::operation::{Backpropagation, Op};
+use ndarray::ScalarOperand;
 use num_traits::{One, Zero};
 use std::{
     cell::RefCell,
@@ -134,6 +135,8 @@ impl Value {
         Value::with_op(value, Op::Pow(self.clone(), exponent))
     }
 }
+
+impl ScalarOperand for Value {}
 
 impl Clone for Value {
     fn clone(&self) -> Self {

@@ -18,4 +18,4 @@ Any type of contribution is welcome as long as it adds value! i.e
 
 * [~~Glorot weight initialization~~](https://www.deeplearning.ai/ai-notes/initialization/index.html)
 * [Create optimizer module for loss functions](https://pytorch.org/docs/stable/optim.html)
-* [Convolutional Layers](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html)
+* [~~Convolutional Layers~~](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html)

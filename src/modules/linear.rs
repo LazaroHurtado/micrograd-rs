@@ -1,8 +1,7 @@
-use crate::mlp::Module;
+use super::Module;
 use crate::prelude::*;
 use crate::utils::WeightInit;
 
-#[derive(Debug)]
 pub struct Linear {
     weights: Tensor<Ix2>,
     biases: Tensor<Ix1>,
@@ -20,6 +19,8 @@ impl Linear {
 }
 
 impl Module for Linear {
+    type Dim = Ix1;
+
     fn parameters(&self) -> Vec<Value> {
         let mut params = self.weights.clone().into_raw_vec();
         params.append(&mut self.biases.clone().into_raw_vec());
@@ -27,7 +28,7 @@ impl Module for Linear {
         params
     }
 
-    fn forward(&self, input: Tensor<Ix1>) -> Tensor<Ix1> {
+    fn forward(&self, input: Tensor<Self::Dim>) -> Tensor<Self::Dim> {
         let weights_t = self.weights.t().into_owned();
 
         input.dot(&weights_t) + &self.biases
