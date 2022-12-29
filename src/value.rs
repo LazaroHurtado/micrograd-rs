@@ -74,6 +74,14 @@ impl Value {
         Value(Rc::new(RefCell::new(data)))
     }
 
+    pub fn max(self, other: Value) -> Self {
+        if self.value() > other.value() {
+            self
+        } else {
+            other
+        }
+    }
+
     pub fn zero() -> Self {
         Value::from(0.0)
     }
