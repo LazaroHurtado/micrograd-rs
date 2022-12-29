@@ -2,6 +2,17 @@ use super::Module;
 use crate::prelude::*;
 use ndarray::RemoveAxis;
 
+#[macro_export]
+macro_rules! sequential {
+    ($d: tt, [$($module: expr),*]) => {{
+        let mut modules: Vec<Box<dyn Module<Dim = $d>>> = vec![];
+        $(
+            modules.push(Box::new($module));
+        )*
+        Sequential::new(modules)
+    }};
+}
+
 pub struct Sequential<D> {
     layers: Vec<Box<dyn Module<Dim = D>>>,
 }

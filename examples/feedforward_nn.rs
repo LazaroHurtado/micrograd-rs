@@ -1,24 +1,19 @@
-mod activation;
-mod modules;
-mod operation;
-mod prelude;
-mod tensor;
-mod utils;
-mod value;
-
-use activation::Activation;
-use modules::{Linear, Sequential};
-use prelude::*;
+extern crate micrograd_rs;
+use micrograd_rs::prelude::*;
+use micrograd_rs::{Activation, Linear, Module, Sequential};
 
 fn main() {
-    let feedforward = Sequential::new(vec![
-        Box::new(Linear::new(3, 4)),
-        Box::new(Activation::TanH),
-        Box::new(Linear::new(4, 4)),
-        Box::new(Activation::TanH),
-        Box::new(Linear::new(4, 1)),
-        Box::new(Activation::TanH),
-    ]);
+    let feedforward = sequential!(
+        Ix1,
+        [
+            Linear::new(3, 4),
+            Activation::TanH,
+            Linear::new(4, 4),
+            Activation::TanH,
+            Linear::new(4, 1),
+            Activation::TanH
+        ]
+    );
 
     let xs = tensor![
         [val!(2.0), val!(3.0), val!(-1.0)],
