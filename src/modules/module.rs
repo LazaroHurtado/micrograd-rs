@@ -1,11 +1,12 @@
 use crate::prelude::*;
 
-pub trait Module {
-    type Dim;
-
+pub trait Module<D>
+where
+    D: Dimension,
+{
     fn parameters(&self) -> Vec<Value> {
         vec![]
     }
 
-    fn forward(&self, input: Tensor<Self::Dim>) -> Tensor<Self::Dim>;
+    fn forward(&self, input: Tensor<D>) -> Tensor<D>;
 }

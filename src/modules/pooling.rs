@@ -54,14 +54,12 @@ where
     }
 }
 
-impl<D, E> Module for Pooling<D>
+impl<D, E> Module<E> for Pooling<D>
 where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D> + RemoveAxis,
 {
-    type Dim = E;
-
-    fn forward(&self, input: Tensor<Self::Dim>) -> Tensor<Self::Dim> {
+    fn forward(&self, input: Tensor<E>) -> Tensor<E> {
         let mut single_channel_dim = <D>::zeros(D::NDIM.unwrap());
         let mut output_channels = vec![];
 

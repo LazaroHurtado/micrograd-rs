@@ -152,13 +152,11 @@ where
     }
 }
 
-impl<D, E> Module for Convolution<D, E>
+impl<D, E> Module<E> for Convolution<D, E>
 where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D>,
 {
-    type Dim = E;
-
     fn parameters(&self) -> Vec<Value> {
         let mut params = vec![];
 
@@ -168,7 +166,7 @@ where
         params
     }
 
-    fn forward(&self, input: Tensor<Self::Dim>) -> Tensor<Self::Dim> {
+    fn forward(&self, input: Tensor<E>) -> Tensor<E> {
         let mut single_channel_dim = <D>::zeros(D::NDIM.unwrap());
         let mut output_channels = vec![];
 

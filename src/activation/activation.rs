@@ -16,10 +16,11 @@ impl Activation {
     }
 }
 
-impl Module for Activation {
-    type Dim = Ix1;
-
-    fn forward(&self, outputs: Tensor<Self::Dim>) -> Tensor<Self::Dim> {
-        outputs.map(|neuron_output| self.activate(neuron_output.clone()))
+impl<D> Module<D> for Activation
+where
+    D: Dimension,
+{
+    fn forward(&self, outputs: Tensor<D>) -> Tensor<D> {
+        outputs.mapv(|neuron_output| self.activate(neuron_output.clone()))
     }
 }

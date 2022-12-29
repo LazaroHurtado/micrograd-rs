@@ -18,9 +18,7 @@ impl Linear {
     }
 }
 
-impl Module for Linear {
-    type Dim = Ix1;
-
+impl Module<Ix1> for Linear {
     fn parameters(&self) -> Vec<Value> {
         let mut params = self.weights.clone().into_raw_vec();
         params.append(&mut self.biases.clone().into_raw_vec());
@@ -28,7 +26,7 @@ impl Module for Linear {
         params
     }
 
-    fn forward(&self, input: Tensor<Self::Dim>) -> Tensor<Self::Dim> {
+    fn forward(&self, input: Tensor<Ix1>) -> Tensor<Ix1> {
         let weights_t = self.weights.t().into_owned();
 
         input.dot(&weights_t) + &self.biases

@@ -5,7 +5,7 @@ use ndarray::RemoveAxis;
 #[macro_export]
 macro_rules! sequential {
     ($d: tt, [$($module: expr),*]) => {{
-        let mut modules: Vec<Box<dyn Module<Dim = $d>>> = vec![];
+        let mut modules: Vec<Box<dyn Module<$d>>> = vec![];
         $(
             modules.push(Box::new($module));
         )*
@@ -14,7 +14,7 @@ macro_rules! sequential {
 }
 
 pub struct Sequential<D> {
-    layers: Vec<Box<dyn Module<Dim = D>>>,
+    layers: Vec<Box<dyn Module<D>>>,
 }
 
 impl<D, E> Sequential<D>
@@ -22,7 +22,7 @@ where
     E: Dimension<Smaller = D> + RemoveAxis,
     D: Dimension<Larger = E>,
 {
-    pub fn new(layers: Vec<Box<dyn Module<Dim = D>>>) -> Self {
+    pub fn new(layers: Vec<Box<dyn Module<D>>>) -> Self {
         Sequential { layers }
     }
 
