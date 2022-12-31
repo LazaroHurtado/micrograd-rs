@@ -20,7 +20,7 @@ Any type of contribution is welcome as long as it adds value! i.e
     * [~~Glorot~~](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/GlorotNormal)
     * [He](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/HeNormal)
     * [Lecun](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/LecunNormal)
-* [Create optimizer module for loss functions](https://pytorch.org/docs/stable/optim.html)
+* [Create optimizer module for optimization algorithms](https://pytorch.org/docs/stable/optim.html)
 * Convolutional Neural Networks
     * [~~Convolutional Module~~](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html)
     * Pooling Module

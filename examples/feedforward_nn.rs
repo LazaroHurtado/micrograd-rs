@@ -1,6 +1,6 @@
 extern crate micrograd_rs;
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Activation, Linear, Module, Sequential};
+use micrograd_rs::{Activation, Criterion, Linear, Module, Reduction, Sequential};
 
 fn main() {
     let feedforward = sequential!(
@@ -24,13 +24,15 @@ fn main() {
     let ys = tensor![1, -1, -1, 1];
     let mut ypred: Tensor<Ix1> = Tensor::zeros(4);
 
+    let criterion = Criterion::MSE;
+
     for epoch in 0..20 {
         ypred = feedforward
             .forward_batch(xs.clone())
             .to_shape(4)
             .unwrap()
             .to_owned();
-        let loss: Value = (ypred.clone() - ys.clone()).map(|val| val.powf(2.0)).sum();
+        let loss: Value = criterion.loss(Reduction::Sum, ypred.clone(), ys.clone());
 
         feedforward.zero_grad();
         loss.backward();

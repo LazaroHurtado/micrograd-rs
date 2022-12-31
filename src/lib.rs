@@ -6,6 +6,9 @@ pub use activation::*;
 mod modules;
 pub use modules::*;
 
+mod criterion;
+pub use criterion::*;
+
 mod operation;
 pub mod prelude;
 pub mod utils;
