@@ -6,6 +6,6 @@ use std::f64::consts::E;
 impl Activation {
     pub fn tanh(&self, value: Value) -> Value {
         let activated = (E.powf(2.0 * value.value()) - 1.0) / (E.powf(2.0 * value.value()) + 1.0);
-        Value::with_op(activated, Op::TanH(value.clone()))
+        Value::with_op(activated, Op::Tanh(value))
     }
 }

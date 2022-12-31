@@ -7,11 +7,11 @@ fn main() {
         Ix1,
         [
             Linear::new(3, 4),
-            Activation::TanH,
+            Activation::Tanh,
             Linear::new(4, 4),
-            Activation::TanH,
+            Activation::Tanh,
             Linear::new(4, 1),
-            Activation::TanH
+            Activation::Tanh
         ]
     );
 

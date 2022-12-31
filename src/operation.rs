@@ -9,7 +9,8 @@ pub enum Op {
     Mul(Value, Value),
     Pow(Value, f64),
     ReLu(Value),
-    TanH(Value),
+    Tanh(Value),
+    Softmax(Vec<Value>, Vec<f64>),
 }
 
 impl Op {
@@ -19,7 +20,8 @@ impl Op {
             Op::Mul(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
             Op::Pow(value, _) => vec![value.clone()],
             Op::ReLu(value) => vec![value.clone()],
-            Op::TanH(value) => vec![value.clone()],
+            Op::Tanh(value) => vec![value.clone()],
+            Op::Softmax(inputs, _) => inputs.clone(),
         }
     }
 }
@@ -50,12 +52,19 @@ impl Backpropagation for Op {
 
                 *unactivated_data.grad_mut() += grad * &one_if_greater_than_zero;
             }
-            Op::TanH(Value(unactivated)) => {
+            Op::Tanh(Value(unactivated)) => {
                 let mut unactivated_data = unactivated.borrow_mut();
 
                 let derivative = Value::from(1.0 - value.powf(2.0));
 
                 *unactivated_data.grad_mut() += grad * &derivative;
+            }
+            Op::Softmax(unactivated_inputs, jacobian) => {
+                for (idx, unactivated) in unactivated_inputs.iter().enumerate() {
+                    let mut unactivated_data = unactivated.0.borrow_mut();
+
+                    *unactivated_data.grad_mut() += grad * &jacobian[idx];
+                }
             }
         };
     }

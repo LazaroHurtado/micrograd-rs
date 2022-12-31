@@ -29,8 +29,7 @@ where
     pub fn parameters(&self) -> Vec<Value> {
         self.layers
             .iter()
-            .map(|layer| layer.parameters())
-            .flatten()
+            .flat_map(|layer| layer.parameters())
             .collect()
     }
 

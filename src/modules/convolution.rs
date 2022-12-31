@@ -75,7 +75,7 @@ where
         stride: J,
     ) -> Self {
         let size_d = size.into_dimension();
-        let mut size_with_channel = size_d.clone().insert_axis(Axis(0));
+        let mut size_with_channel = size_d.insert_axis(Axis(0));
         size_with_channel[0] = in_channels;
 
         let weights = Tensor::from_shape_simple_fn(size_with_channel.clone(), || {
