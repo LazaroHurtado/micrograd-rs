@@ -11,6 +11,7 @@ name = "micrograd_rs"
 "rand_distr" = "0.4"
 "num-traits" = "0.2"
 "ndarray" = { git = "https://github.com/LazaroHurtado/ndarray", branch = "windows_stride_feature" }
+"ordered-float" = "1.0.1"
 
 [dev-dependencies]
 "approx" = "0.4"

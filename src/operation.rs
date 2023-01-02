@@ -1,7 +1,7 @@
 use super::value::Value;
 
 pub trait Backpropagation {
-    fn propagate(&self, value: &f64, grad: &Value);
+    fn propagate(&self, value: &Value, grad: &Value);
 }
 
 pub enum Op {
@@ -9,9 +9,11 @@ pub enum Op {
     Sub(Value, Value),
     Mul(Value, Value),
     Div(Value, Value),
-    Pow(Value, f64),
-    Exp(Value, f64),
+    Pow(Value, Value),
+    Exp(Value),
+    Log(Value),
     ReLu(Value),
+    NoOp,
 }
 
 impl Op {
@@ -22,49 +24,85 @@ impl Op {
             Op::Mul(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
             Op::Div(numer, denom) => vec![numer.clone(), denom.clone()],
             Op::Pow(value, _) => vec![value.clone()],
-            Op::Exp(value, _) => vec![value.clone()],
+            Op::Exp(value) => vec![value.clone()],
+            Op::Log(value) => vec![value.clone()],
             Op::ReLu(value) => vec![value.clone()],
+            Op::NoOp => vec![],
         }
     }
 }
 
 impl Backpropagation for Op {
-    fn propagate(&self, value: &f64, grad: &Value) {
+    fn propagate(&self, value: &Value, grad: &Value) {
         match self {
-            Op::Add(Value(lhs), Value(rhs)) => {
-                let mut lhs_data = lhs.borrow_mut();
-                *lhs_data.grad_mut() += grad;
+            Op::Add(lhs, rhs) => {
+                if lhs.should_compute_grad() {
+                    let mut lhs_data = lhs.0.borrow_mut();
+                    *lhs_data.grad_mut() += grad;
+                }
 
-                let mut rhs_data = rhs.borrow_mut();
-                *rhs_data.grad_mut() += grad;
+                if rhs.should_compute_grad() {
+                    let mut rhs_data = rhs.0.borrow_mut();
+                    *rhs_data.grad_mut() += grad;
+                }
             }
-            Op::Sub(Value(lhs), Value(rhs)) => {
-                let mut lhs_data = lhs.borrow_mut();
-                *lhs_data.grad_mut() += grad;
+            Op::Sub(lhs, rhs) => {
+                if lhs.should_compute_grad() {
+                    let mut lhs_data = lhs.0.borrow_mut();
+                    *lhs_data.grad_mut() += grad;
+                }
 
-                let mut rhs_data = rhs.borrow_mut();
-                *rhs_data.grad_mut() += -grad;
+                if rhs.should_compute_grad() {
+                    let mut rhs_data = rhs.0.borrow_mut();
+                    *rhs_data.grad_mut() += -grad;
+                }
             }
             Op::Mul(lhs, rhs) => {
-                *lhs.0.borrow_mut().grad_mut() += grad * rhs;
-                *rhs.0.borrow_mut().grad_mut() += grad * lhs;
+                if lhs.should_compute_grad() {
+                    *lhs.0.borrow_mut().grad_mut() += grad * rhs;
+                }
+                if rhs.should_compute_grad() {
+                    *rhs.0.borrow_mut().grad_mut() += grad * lhs;
+                }
             }
             Op::Div(numer, denom) => {
-                *numer.0.borrow_mut().grad_mut() += grad / denom;
-                *denom.0.borrow_mut().grad_mut() += grad * &(numer / &denom.powf(2.0));
+                if numer.should_compute_grad() {
+                    *numer.0.borrow_mut().grad_mut() += grad / denom;
+                }
+                if denom.should_compute_grad() {
+                    let derivative = -(numer / &denom.powf(2.0));
+                    *denom.0.borrow_mut().grad_mut() += grad * &derivative;
+                }
             }
             Op::Pow(variable, exponent) => {
-                let derivative = &variable.powf(exponent - 1.0) * exponent;
-
-                *variable.0.borrow_mut().grad_mut() += grad * &derivative;
+                if variable.should_compute_grad() {
+                    let wrt_variable = &variable.pow(exponent - &1.0) * exponent;
+                    *variable.0.borrow_mut().grad_mut() += grad * &wrt_variable;
+                }
+                if exponent.should_compute_grad() {
+                    let wrt_exponent = variable.log() * variable.pow(exponent.clone());
+                    *exponent.0.borrow_mut().grad_mut() += grad * &wrt_exponent;
+                }
             }
-            Op::Exp(exponent, result) => *exponent.0.borrow_mut().grad_mut() += grad * result,
-            Op::ReLu(Value(unactivated)) => {
-                let mut unactivated_data = unactivated.borrow_mut();
-                let one_if_greater_than_zero = value.ceil().min(1.0);
-
-                *unactivated_data.grad_mut() += grad * &one_if_greater_than_zero;
+            Op::Exp(exponent) => {
+                if exponent.should_compute_grad() {
+                    *exponent.0.borrow_mut().grad_mut() += grad * value
+                }
             }
+            Op::Log(variable) => {
+                if variable.should_compute_grad() {
+                    *variable.0.borrow_mut().grad_mut() += grad / value
+                }
+            }
+            Op::ReLu(unactivated) => {
+                if unactivated.should_compute_grad() {
+                    let mut unactivated_data = unactivated.0.borrow_mut();
+                    let one_if_greater_than_zero = value.value().ceil().min(1.0);
+
+                    *unactivated_data.grad_mut() += grad * &one_if_greater_than_zero;
+                }
+            }
+            _ => (),
         };
     }
 }

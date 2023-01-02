@@ -1,12 +1,13 @@
 use super::operation::{Backpropagation, Op};
 use ndarray::ScalarOperand;
 use num_traits::{One, Zero};
+use ordered_float::NotNan;
 
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use std::cell::RefCell;
 use std::f64::consts::E;
 use std::fmt;
 use std::iter::Sum;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use std::rc::Rc;
 
 #[macro_export]
@@ -29,15 +30,16 @@ macro_rules! val {
 }
 
 pub struct Data {
-    pub value: f64,
+    pub value: NotNan<f64>,
     grad: Option<Value>,
-    operation: Option<Op>,
+    operation: Op,
     back_pass: bool,
+    requires_grad: bool,
 }
 
 impl Data {
     pub fn value(&self) -> f64 {
-        self.value
+        self.value.into_inner()
     }
 
     pub fn grad(&mut self) -> Value {
@@ -45,7 +47,7 @@ impl Data {
     }
 
     pub fn grad_mut(&mut self) -> &mut Value {
-        self.grad.get_or_insert(Value::new(0.0))
+        self.grad.get_or_insert(Value::zero())
     }
 }
 
@@ -54,10 +56,11 @@ pub struct Value(pub Rc<RefCell<Data>>);
 impl Value {
     pub fn new(value: f64) -> Self {
         let data = Data {
-            value,
+            value: NotNan::new(value).expect("Value cannot be NaN"),
             grad: None,
-            operation: None,
+            operation: Op::NoOp,
             back_pass: false,
+            requires_grad: true,
         };
 
         Value(Rc::new(RefCell::new(data)))
@@ -65,13 +68,22 @@ impl Value {
 
     pub fn with_op(value: f64, operation: Op) -> Self {
         let data = Data {
-            value,
+            value: NotNan::new(value).expect("Value cannot be NaN"),
             grad: None,
-            operation: Some(operation),
+            operation,
             back_pass: false,
+            requires_grad: true,
         };
 
         Value(Rc::new(RefCell::new(data)))
+    }
+
+    pub fn requires_grad(&mut self, requires: bool) {
+        self.0.borrow_mut().requires_grad = requires;
+    }
+
+    pub fn should_compute_grad(&self) -> bool {
+        self.0.borrow().requires_grad
     }
 
     pub fn max(self, other: Value) -> Self {
@@ -105,29 +117,47 @@ impl Value {
         data.back_pass = false;
     }
 
-    pub fn powf(&self, exponent: f64) -> Self {
-        let value = self.value().powf(exponent);
+    pub fn powf<T: Into<f64>>(&self, raw_exponent: T) -> Self {
+        let mut exponent = Value::from(raw_exponent);
+        exponent.requires_grad(false);
+
+        let value = self.value().powf(exponent.value());
+        Value::with_op(value, Op::Pow(self.clone(), exponent))
+    }
+
+    pub fn pow(&self, exponent: Self) -> Self {
+        let value = self.value().powf(exponent.value());
         Value::with_op(value, Op::Pow(self.clone(), exponent))
     }
 
     pub fn exp(&self) -> Self {
         let value = E.powf(self.value());
-        Value::with_op(value, Op::Exp(self.clone(), value))
+        Value::with_op(value, Op::Exp(self.clone()))
+    }
+
+    pub fn log(&self) -> Self {
+        let value = self.value().ln();
+        Value::with_op(value, Op::Exp(self.clone()))
     }
 
     pub fn backward(&self) {
         let topo_order = self.topo_sort();
-        self.0.borrow_mut().grad = Some(Value::new(1.0));
+        self.0.borrow_mut().grad = Some(Value::one());
 
-        topo_order.iter().rev().for_each(|source| {
-            let mut data = source.0.borrow_mut();
-            let value = data.value();
-            let grad = data.grad();
-
-            if let Some(op) = &data.operation {
-                op.propagate(&value, &grad)
+        for source in topo_order.iter().rev() {
+            let grad;
+            {
+                let mut data = source.0.borrow_mut();
+                data.back_pass = false;
+                grad = data.grad();
             }
-        });
+
+            let operation = &source.0.borrow().operation;
+            match operation {
+                Op::NoOp => continue,
+                op => op.propagate(source, &grad),
+            }
+        }
     }
 
     fn topo_sort(&self) -> Vec<Value> {
@@ -135,11 +165,15 @@ impl Value {
 
         let mut data = self.0.borrow_mut();
         data.back_pass = true;
+        data.grad = Some(Value::zero());
 
-        if let Some(op) = &data.operation {
-            for operand in op.equation() {
-                if !operand.0.borrow().back_pass {
-                    order.append(&mut operand.topo_sort());
+        match &data.operation {
+            Op::NoOp => (),
+            op => {
+                for operand in op.equation() {
+                    if !operand.0.borrow().back_pass {
+                        order.append(&mut operand.topo_sort());
+                    }
                 }
             }
         }
@@ -253,10 +287,12 @@ macro_rules! impl_binary_ops {
             type Output = Value;
 
             fn $mth(self, rhs: T) -> Self::Output {
-                let rhs_val = Value::from(rhs);
+                let mut rhs_val = Value::from(rhs);
+                rhs_val.requires_grad(false);
+
                 let value = self.value() $operator rhs_val.value();
                 let operation = Op::$op_varient(self, rhs_val);
-                
+
                 Value::with_op(value, operation)
             }
         }
@@ -265,10 +301,12 @@ macro_rules! impl_binary_ops {
             type Output = Value;
 
             fn $mth(self, rhs: &'a T) -> Self::Output {
-                let rhs_val = Value::from(*rhs);
+                let mut rhs_val = Value::from(*rhs);
+                rhs_val.requires_grad(false);
+
                 let value = self.value() $operator rhs_val.value();
                 let operation = Op::$op_varient(self.clone(), rhs_val);
-                
+
                 Value::with_op(value, operation)
             }
         }

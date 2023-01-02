@@ -26,7 +26,7 @@ fn main() {
 
     let criterion = Criterion::MSE;
 
-    for epoch in 0..20 {
+    for epoch in 0..=20 {
         ypred = feedforward
             .forward_batch(xs.clone())
             .to_shape(4)
