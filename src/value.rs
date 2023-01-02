@@ -1,13 +1,13 @@
 use super::operation::{Backpropagation, Op};
 use ndarray::ScalarOperand;
 use num_traits::{One, Zero};
-use std::{
-    cell::RefCell,
-    fmt,
-    iter::Sum,
-    ops::{Add, AddAssign, Div, Mul, Neg, Sub},
-    rc::Rc,
-};
+
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::cell::RefCell;
+use std::f64::consts::E;
+use std::fmt;
+use std::iter::Sum;
+use std::rc::Rc;
 
 #[macro_export]
 macro_rules! values {
@@ -99,6 +99,22 @@ impl Value {
         data.grad()
     }
 
+    pub fn zero_grad(&self) {
+        let mut data = self.0.borrow_mut();
+        data.grad = None;
+        data.back_pass = false;
+    }
+
+    pub fn powf(&self, exponent: f64) -> Self {
+        let value = self.value().powf(exponent);
+        Value::with_op(value, Op::Pow(self.clone(), exponent))
+    }
+
+    pub fn exp(&self) -> Self {
+        let value = E.powf(self.value());
+        Value::with_op(value, Op::Exp(self.clone(), value))
+    }
+
     pub fn backward(&self) {
         let topo_order = self.topo_sort();
         self.0.borrow_mut().grad = Some(Value::new(1.0));
@@ -130,17 +146,6 @@ impl Value {
         order.push(self.clone());
 
         order
-    }
-
-    pub fn zero_grad(&self) {
-        let mut data = self.0.borrow_mut();
-        data.grad = None;
-        data.back_pass = false;
-    }
-
-    pub fn powf(&self, exponent: f64) -> Self {
-        let value = self.value().powf(exponent);
-        Value::with_op(value, Op::Pow(self.clone(), exponent))
     }
 }
 
@@ -204,24 +209,11 @@ impl Sum<Self> for Value {
     }
 }
 
-impl AddAssign for Value {
-    fn add_assign(&mut self, other: Self) {
-        *self = self.clone() + other;
-    }
-}
-
-impl AddAssign<&Value> for Value {
-    fn add_assign(&mut self, other: &Value) {
-        *self = self.clone() + other.clone();
-    }
-}
-
 impl Neg for Value {
-    type Output = Self;
+    type Output = Value;
 
     fn neg(self) -> Self::Output {
-        self.0.borrow_mut().value *= -1.0;
-        self
+        Value::zero() - self
     }
 }
 
@@ -229,177 +221,85 @@ impl Neg for &Value {
     type Output = Value;
 
     fn neg(self) -> Self::Output {
-        -self.clone()
+        &Value::zero() - self
     }
 }
 
-impl Add<Value> for Value {
-    type Output = Self;
+macro_rules! impl_binary_ops {
+    ($trait: ident, $mth: ident, $operator: tt, $op_varient: tt) => {
+        impl $trait<Value> for Value {
+            type Output = Value;
 
-    fn add(self, rhs: Self) -> Self::Output {
-        let value = self.value() + rhs.value();
-        let operation = Op::Add(self, rhs);
+            fn $mth(self, rhs: Self) -> Self::Output {
+                let result = self.value() $operator rhs.value();
+                let operation = Op::$op_varient(self, rhs);
 
-        Value::with_op(value, operation)
+                Value::with_op(result, operation)
+            }
+        }
+
+        impl<'a> $trait<&'a Value> for &'a Value {
+            type Output = Value;
+
+            fn $mth(self, rhs: Self) -> Self::Output {
+                let result = self.value() $operator rhs.value();
+                let operation = Op::$op_varient(self.clone(), rhs.clone());
+
+                Value::with_op(result, operation)
+            }
+        }
+
+        impl<T> $trait<T> for Value where T: Into<f64> {
+            type Output = Value;
+
+            fn $mth(self, rhs: T) -> Self::Output {
+                let rhs_val = Value::from(rhs);
+                let value = self.value() $operator rhs_val.value();
+                let operation = Op::$op_varient(self, rhs_val);
+                
+                Value::with_op(value, operation)
+            }
+        }
+
+        impl<'a, T> $trait<&'a T> for &'a Value where T: Into<f64> + Copy {
+            type Output = Value;
+
+            fn $mth(self, rhs: &'a T) -> Self::Output {
+                let rhs_val = Value::from(*rhs);
+                let value = self.value() $operator rhs_val.value();
+                let operation = Op::$op_varient(self.clone(), rhs_val);
+                
+                Value::with_op(value, operation)
+            }
+        }
     }
 }
 
-impl Add<&Value> for &Value {
-    type Output = Value;
+impl_binary_ops!(Add, add, +, Add);
+impl_binary_ops!(Sub, sub, -, Sub);
+impl_binary_ops!(Mul, mul, *, Mul);
+impl_binary_ops!(Div, div, /, Div);
 
-    fn add(self, rhs: &Value) -> Self::Output {
-        let value = self.value() + rhs.value();
-        let operation = Op::Add(self.clone(), rhs.clone());
+macro_rules! impl_binary_assign_ops {
+    ($trait: ident, $mth: ident, $operator: tt) => {
+        impl $trait for Value {
+            fn $mth(&mut self, rhs: Self) {
+                *self = self.clone() $operator rhs;
+            }
+        }
 
-        Value::with_op(value, operation)
+        impl $trait<&Value> for Value {
+            fn $mth(&mut self, rhs: &Value) {
+                *self = self.clone() $operator rhs.clone();
+            }
+        }
     }
 }
 
-impl<T> Add<T> for Value
-where
-    T: Into<f64>,
-{
-    type Output = Self;
-
-    fn add(self, other: T) -> Self::Output {
-        let rhs = Value::from(other);
-        let value = self.value() + rhs.value();
-        let operation = Op::Add(self, rhs);
-
-        Value::with_op(value, operation)
-    }
-}
-
-impl<T> Add<&T> for &Value
-where
-    T: Into<f64> + Copy,
-{
-    type Output = Value;
-
-    fn add(self, other: &T) -> Self::Output {
-        let rhs = Value::from(*other);
-        let value = self.value() + rhs.value();
-        let operation = Op::Add(self.clone(), rhs);
-
-        Value::with_op(value, operation)
-    }
-}
-
-impl<T> Sub<T> for Value
-where
-    Self: Add<T, Output = Self>,
-    T: Neg<Output = T>,
-{
-    type Output = Self;
-
-    fn sub(self, rhs: T) -> Self::Output {
-        self + (-rhs)
-    }
-}
-
-impl<'a, T> Sub<&'a T> for &'a Value
-where
-    Value: Add<T, Output = Value>,
-    &'a T: Neg<Output = T>,
-{
-    type Output = Value;
-
-    fn sub(self, rhs: &'a T) -> Self::Output {
-        self.clone() + (-rhs)
-    }
-}
-
-impl Mul<Value> for Value {
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        let value = self.value() * rhs.value();
-        let operation = Op::Mul(self, rhs);
-
-        Value::with_op(value, operation)
-    }
-}
-
-impl Mul<&Value> for &Value {
-    type Output = Value;
-
-    fn mul(self, rhs: &Value) -> Self::Output {
-        let value = self.value() * rhs.value();
-        let operation = Op::Mul(self.clone(), rhs.clone());
-
-        Value::with_op(value, operation)
-    }
-}
-
-impl<T> Mul<T> for Value
-where
-    T: Into<f64>,
-{
-    type Output = Self;
-
-    fn mul(self, other: T) -> Self::Output {
-        let rhs = Value::from(other);
-        let value = self.value() * rhs.value();
-        let operation = Op::Mul(self, rhs);
-
-        Value::with_op(value, operation)
-    }
-}
-
-impl<T> Mul<&T> for &Value
-where
-    T: Into<f64> + Copy,
-{
-    type Output = Value;
-
-    fn mul(self, other: &T) -> Self::Output {
-        let rhs = Value::from(*other);
-        let value = self.value() * rhs.value();
-        let operation = Op::Mul(self.clone(), rhs);
-
-        Value::with_op(value, operation)
-    }
-}
-
-impl Div<Value> for Value {
-    type Output = Self;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        self * rhs.powf(-1.0)
-    }
-}
-
-impl Div<&Value> for &Value {
-    type Output = Value;
-
-    fn div(self, rhs: &Value) -> Self::Output {
-        self * &rhs.powf(-1.0)
-    }
-}
-
-impl<T> Div<T> for Value
-where
-    T: Into<f64>,
-{
-    type Output = Self;
-
-    fn div(self, other: T) -> Self::Output {
-        let rhs = Value::from(other);
-        self * rhs.powf(-1.0)
-    }
-}
-
-impl<T> Div<&T> for &Value
-where
-    T: Into<f64> + Copy,
-{
-    type Output = Value;
-
-    fn div(self, other: &T) -> Self::Output {
-        let rhs = Value::from(*other);
-        self * &rhs.powf(-1.0)
-    }
-}
+impl_binary_assign_ops!(AddAssign, add_assign, +);
+impl_binary_assign_ops!(SubAssign, sub_assign, -);
+impl_binary_assign_ops!(MulAssign, mul_assign, *);
+impl_binary_assign_ops!(DivAssign, div_assign, /);
 
 impl fmt::Debug for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
