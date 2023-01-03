@@ -3,7 +3,7 @@ use ndarray::ScalarOperand;
 use num_traits::{One, Zero};
 use ordered_float::NotNan;
 
-use std::cell::RefCell;
+use std::cell::{RefCell, RefMut};
 use std::f64::consts::E;
 use std::fmt;
 use std::iter::Sum;
@@ -37,21 +37,7 @@ pub struct Data {
     requires_grad: bool,
 }
 
-impl Data {
-    pub fn value(&self) -> f64 {
-        self.value.into_inner()
-    }
-
-    pub fn grad(&mut self) -> Value {
-        self.grad_mut().clone()
-    }
-
-    pub fn grad_mut(&mut self) -> &mut Value {
-        self.grad.get_or_insert(Value::zero())
-    }
-}
-
-pub struct Value(pub Rc<RefCell<Data>>);
+pub struct Value(Rc<RefCell<Data>>);
 
 impl Value {
     pub fn new(value: f64) -> Self {
@@ -103,12 +89,19 @@ impl Value {
     }
 
     pub fn value(&self) -> f64 {
-        self.0.borrow().value()
+        self.0.borrow().value.into_inner()
     }
 
-    pub fn grad(&self) -> Self {
-        let mut data = self.0.borrow_mut();
-        data.grad()
+    pub fn value_mut(&self) -> RefMut<NotNan<f64>> {
+        RefMut::map(self.0.borrow_mut(), |data| &mut data.value)
+    }
+
+    pub fn grad(&self) -> Option<Value> {
+        self.0.borrow().grad.clone()
+    }
+
+    pub fn grad_mut(&self) -> RefMut<Value> {
+        RefMut::map(self.0.borrow_mut(), |data| data.grad.get_or_insert(Value::zero()))
     }
 
     pub fn zero_grad(&self) {
@@ -145,17 +138,15 @@ impl Value {
         self.0.borrow_mut().grad = Some(Value::one());
 
         for source in topo_order.iter().rev() {
-            let grad;
             {
                 let mut data = source.0.borrow_mut();
                 data.back_pass = false;
-                grad = data.grad();
             }
 
             let operation = &source.0.borrow().operation;
             match operation {
                 Op::NoOp => continue,
-                op => op.propagate(source, &grad),
+                op => op.propagate(source),
             }
         }
     }

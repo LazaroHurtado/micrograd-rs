@@ -12,7 +12,7 @@ fn nth_derivative(n: usize, x: Value, y: Value) -> f64 {
         .fold(y, |d: Value, _| {
             x.zero_grad();
             d.backward();
-            x.grad()
+            x.grad().unwrap_or_else(Value::zero)
         })
         .value()
 }

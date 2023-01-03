@@ -37,10 +37,9 @@ fn main() {
         feedforward.zero_grad();
         loss.backward();
 
-        for param in feedforward.parameters().iter() {
-            let grad = param.grad();
-            let mut param_mut = param.0.borrow_mut();
-            param_mut.value += grad.value() * -0.1;
+        for param in feedforward.parameters().iter_mut() {
+            let grad = param.grad().unwrap();
+            *param.value_mut() += grad.value() * -0.1;
         }
 
         if epoch % 10 == 0 {
