@@ -1,43 +1,29 @@
-use super::value::Value;
+use super::{Op, Value};
 
-pub trait Backpropagation {
-    fn propagate(&self, source: &Value);
-}
-
-pub enum Op {
+pub enum BinaryOps {
     Add(Value, Value),
     Sub(Value, Value),
     Mul(Value, Value),
     Div(Value, Value),
     Pow(Value, Value),
-    Exp(Value),
-    Log(Value),
-    ReLu(Value),
-    NoOp,
 }
 
-impl Op {
-    pub fn equation(&self) -> Vec<Value> {
+impl Op for BinaryOps {
+    fn variables(&self) -> Vec<Value> {
         match self {
-            Op::Add(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
-            Op::Sub(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
-            Op::Mul(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
-            Op::Div(numer, denom) => vec![numer.clone(), denom.clone()],
-            Op::Pow(value, _) => vec![value.clone()],
-            Op::Exp(value) => vec![value.clone()],
-            Op::Log(value) => vec![value.clone()],
-            Op::ReLu(value) => vec![value.clone()],
-            Op::NoOp => vec![],
+            Self::Add(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
+            Self::Sub(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
+            Self::Mul(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
+            Self::Div(numer, denom) => vec![numer.clone(), denom.clone()],
+            Self::Pow(value, exponent) => vec![value.clone(), exponent.clone()],
         }
     }
-}
 
-impl Backpropagation for Op {
     fn propagate(&self, source: &Value) {
         let grad = &source.grad().unwrap();
 
         match self {
-            Op::Add(lhs, rhs) => {
+            Self::Add(lhs, rhs) => {
                 if lhs.should_compute_grad() {
                     *lhs.grad_mut() += grad;
                 }
@@ -46,7 +32,7 @@ impl Backpropagation for Op {
                     *rhs.grad_mut() += grad;
                 }
             }
-            Op::Sub(lhs, rhs) => {
+            Self::Sub(lhs, rhs) => {
                 if lhs.should_compute_grad() {
                     *lhs.grad_mut() += grad;
                 }
@@ -55,7 +41,7 @@ impl Backpropagation for Op {
                     *rhs.grad_mut() += -grad;
                 }
             }
-            Op::Mul(lhs, rhs) => {
+            Self::Mul(lhs, rhs) => {
                 if lhs.should_compute_grad() {
                     *lhs.grad_mut() += grad * rhs;
                 }
@@ -63,7 +49,7 @@ impl Backpropagation for Op {
                     *rhs.grad_mut() += grad * lhs;
                 }
             }
-            Op::Div(numer, denom) => {
+            Self::Div(numer, denom) => {
                 if numer.should_compute_grad() {
                     *numer.grad_mut() += grad / denom;
                 }
@@ -72,7 +58,7 @@ impl Backpropagation for Op {
                     *denom.grad_mut() += grad * &derivative;
                 }
             }
-            Op::Pow(variable, exponent) => {
+            Self::Pow(variable, exponent) => {
                 if variable.should_compute_grad() {
                     let wrt_variable = &variable.pow(exponent - &1.0) * exponent;
                     *variable.grad_mut() += grad * &wrt_variable;
@@ -82,24 +68,6 @@ impl Backpropagation for Op {
                     *exponent.grad_mut() += grad * &wrt_exponent;
                 }
             }
-            Op::Exp(exponent) => {
-                if exponent.should_compute_grad() {
-                    *exponent.grad_mut() += grad * source
-                }
-            }
-            Op::Log(variable) => {
-                if variable.should_compute_grad() {
-                    *variable.grad_mut() += grad / source
-                }
-            }
-            Op::ReLu(unactivated) => {
-                if unactivated.should_compute_grad() {
-                    let one_if_greater_than_zero = source.value().ceil().min(1.0);
-
-                    *unactivated.grad_mut() += grad * &one_if_greater_than_zero;
-                }
-            }
-            _ => (),
         };
     }
 }

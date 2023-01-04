@@ -9,11 +9,12 @@ pub use modules::*;
 mod criterion;
 pub use criterion::*;
 
-mod operation;
+mod ops;
+
 pub mod prelude;
 pub mod utils;
 
-pub mod tensor;
+mod tensor;
 pub use tensor::Tensor;
 
 mod value;

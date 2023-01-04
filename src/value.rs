@@ -1,4 +1,4 @@
-use super::operation::{Backpropagation, Op};
+use super::ops::{BinaryOps, Op, UnaryOps};
 use ndarray::ScalarOperand;
 use num_traits::{One, Zero};
 use ordered_float::NotNan;
@@ -32,7 +32,7 @@ macro_rules! val {
 pub struct Data {
     pub value: NotNan<f64>,
     grad: Option<Value>,
-    operation: Op,
+    operation: Box<dyn Op>,
     back_pass: bool,
     requires_grad: bool,
 }
@@ -44,7 +44,7 @@ impl Value {
         let data = Data {
             value: NotNan::new(value).expect("Value cannot be NaN"),
             grad: None,
-            operation: Op::NoOp,
+            operation: Box::new(UnaryOps::NoOp),
             back_pass: false,
             requires_grad: true,
         };
@@ -52,11 +52,11 @@ impl Value {
         Value(Rc::new(RefCell::new(data)))
     }
 
-    pub fn with_op(value: f64, operation: Op) -> Self {
+    pub fn with_op<T: Op + 'static>(value: f64, operation: T) -> Self {
         let data = Data {
             value: NotNan::new(value).expect("Value cannot be NaN"),
             grad: None,
-            operation,
+            operation: Box::new(operation),
             back_pass: false,
             requires_grad: true,
         };
@@ -117,22 +117,22 @@ impl Value {
         exponent.requires_grad(false);
 
         let value = self.value().powf(exponent.value());
-        Value::with_op(value, Op::Pow(self.clone(), exponent))
+        Value::with_op(value, BinaryOps::Pow(self.clone(), exponent))
     }
 
     pub fn pow(&self, exponent: Self) -> Self {
         let value = self.value().powf(exponent.value());
-        Value::with_op(value, Op::Pow(self.clone(), exponent))
+        Value::with_op(value, BinaryOps::Pow(self.clone(), exponent))
     }
 
     pub fn exp(&self) -> Self {
         let value = E.powf(self.value());
-        Value::with_op(value, Op::Exp(self.clone()))
+        Value::with_op(value, UnaryOps::Exp(self.clone()))
     }
 
     pub fn log(&self) -> Self {
         let value = self.value().ln();
-        Value::with_op(value, Op::Exp(self.clone()))
+        Value::with_op(value, UnaryOps::Exp(self.clone()))
     }
 
     pub fn backward(&self) {
@@ -145,11 +145,8 @@ impl Value {
                 data.back_pass = false;
             }
 
-            let operation = &source.0.borrow().operation;
-            match operation {
-                Op::NoOp => continue,
-                op => op.propagate(source),
-            }
+            let operation = &*source.0.borrow().operation;
+            operation.propagate(source);
         }
     }
 
@@ -160,16 +157,13 @@ impl Value {
         data.back_pass = true;
         data.grad = Some(Value::zero());
 
-        match &data.operation {
-            Op::NoOp => (),
-            op => {
-                for operand in op.equation() {
-                    if !operand.0.borrow().back_pass {
-                        order.append(&mut operand.topo_sort());
-                    }
-                }
+        let operation = &*data.operation;
+        for operand in operation.variables() {
+            if !operand.0.borrow().back_pass {
+                order.append(&mut operand.topo_sort());
             }
         }
+
         order.push(self.clone());
 
         order
@@ -259,7 +253,7 @@ macro_rules! impl_binary_ops {
 
             fn $mth(self, rhs: Self) -> Self::Output {
                 let result = self.value() $operator rhs.value();
-                let operation = Op::$op_varient(self, rhs);
+                let operation = BinaryOps::$op_varient(self, rhs);
 
                 Value::with_op(result, operation)
             }
@@ -270,7 +264,7 @@ macro_rules! impl_binary_ops {
 
             fn $mth(self, rhs: Self) -> Self::Output {
                 let result = self.value() $operator rhs.value();
-                let operation = Op::$op_varient(self.clone(), rhs.clone());
+                let operation = BinaryOps::$op_varient(self.clone(), rhs.clone());
 
                 Value::with_op(result, operation)
             }
@@ -284,7 +278,7 @@ macro_rules! impl_binary_ops {
                 rhs_val.requires_grad(false);
 
                 let value = self.value() $operator rhs_val.value();
-                let operation = Op::$op_varient(self, rhs_val);
+                let operation = BinaryOps::$op_varient(self, rhs_val);
 
                 Value::with_op(value, operation)
             }
@@ -298,7 +292,7 @@ macro_rules! impl_binary_ops {
                 rhs_val.requires_grad(false);
 
                 let value = self.value() $operator rhs_val.value();
-                let operation = Op::$op_varient(self.clone(), rhs_val);
+                let operation = BinaryOps::$op_varient(self.clone(), rhs_val);
 
                 Value::with_op(value, operation)
             }
