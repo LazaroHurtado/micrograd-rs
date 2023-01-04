@@ -101,7 +101,9 @@ impl Value {
     }
 
     pub fn grad_mut(&self) -> RefMut<Value> {
-        RefMut::map(self.0.borrow_mut(), |data| data.grad.get_or_insert(Value::zero()))
+        RefMut::map(self.0.borrow_mut(), |data| {
+            data.grad.get_or_insert(Value::zero())
+        })
     }
 
     pub fn zero_grad(&self) {

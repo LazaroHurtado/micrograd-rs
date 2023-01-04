@@ -1,13 +1,10 @@
 use super::Criterion;
 use crate::prelude::*;
-use std::ops::Neg;
 
 impl Criterion {
-    pub fn mse<D, A>(&self, predicted: Tensor<D>, target: Array<A, D>) -> Tensor<D>
+    pub fn mse<D>(&self, predicted: Tensor<D>, target: Tensor<D>) -> Tensor<D>
     where
         D: Dimension,
-        A: Into<f64> + Neg<Output = A>,
-        Array<A, D>: IntoIterator<Item = A>,
     {
         let dim = predicted.raw_dim();
 

@@ -16,12 +16,12 @@ fn main() {
     );
 
     let xs = tensor![
-        [val!(2.0), val!(3.0), val!(-1.0)],
-        [val!(3.0), val!(-1.0), val!(0.5)],
-        [val!(0.5), val!(1.0), val!(1.0)],
-        [val!(1.0), val!(1.0), val!(-1.0)]
+        [2.0, 3.0, -1.0],
+        [3.0, -1.0, 0.5],
+        [0.5, 1.0, 1.0],
+        [1.0, 1.0, -1.0]
     ];
-    let ys = tensor![1, -1, -1, 1];
+    let ys = tensor!([1., -1., -1., 1.], requires_grad = false);
     let mut ypred: Tensor<Ix1> = Tensor::zeros(4);
 
     let criterion = Criterion::MSE;

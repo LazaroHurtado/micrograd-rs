@@ -1,6 +1,20 @@
 use crate::prelude::*;
-use ndarray::{ArrayBase, Data, Ix1, Ix2, OwnedRepr};
+use ndarray::{Data, OwnedRepr};
 use std::iter::zip;
+
+#[macro_export]
+macro_rules! tensor {
+    ([$($x:expr),*] $(, $mth:ident = $val:expr)*) => {
+        array!($($x),*).mapv(|elem: f64| {
+            let mut value = val!(elem);
+            $( value.$mth($val) )*;
+            value
+        })
+    };
+    ($($x:expr),*) => {
+        array!($($x),*).mapv(|elem: f64| val!(elem))
+    }
+}
 
 pub type Tensor<D> = ArrayBase<OwnedRepr<Value>, D>;
 

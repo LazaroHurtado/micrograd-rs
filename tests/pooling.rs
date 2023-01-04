@@ -20,10 +20,7 @@ fn valid_max_pooling_1d() {
     let max_pool_1d = Pooling::Max(Filter::new(size, stride));
 
     let pooled_input = max_pool_1d.forward(input);
-    assert_eq!(
-        pooled_input,
-        tensor![[val!(1), val!(2)], [val!(4), val!(5)]]
-    );
+    assert_eq!(pooled_input, tensor![[1., 2.], [4., 5.]]);
 }
 
 #[test]
@@ -39,9 +36,9 @@ fn valid_max_pooling_2d() {
     assert_eq!(
         pooled_input,
         tensor![
-            [[val!(4), val!(5)], [val!(10), val!(11)]],
-            [[val!(16), val!(17)], [val!(22), val!(23)]],
-            [[val!(28), val!(29)], [val!(34), val!(35)]]
+            [[4., 5.], [10., 11.]],
+            [[16., 17.], [22., 23.]],
+            [[28., 29.], [34., 35.]]
         ]
     );
 }
@@ -58,24 +55,9 @@ fn valid_max_pooling_3d() {
     let pooled_input = max_pool_3d.forward(input);
     assert_eq!(
         pooled_input,
-        Tensor::from_shape_vec(
-            (3, 1, 2, 2),
-            vec![
-                val!(16),
-                val!(17),
-                val!(22),
-                val!(23),
-                val!(40),
-                val!(41),
-                val!(46),
-                val!(47),
-                val!(64),
-                val!(65),
-                val!(70),
-                val!(71)
-            ]
-        )
-        .unwrap()
+        tensor![16., 17., 22., 23., 40., 41., 46., 47., 64., 65., 70., 71.]
+            .into_shape((3, 1, 2, 2))
+            .unwrap()
     );
 }
 
@@ -89,10 +71,7 @@ fn valid_avg_pooling_1d() {
     let avg_pool_1d = Pooling::Average(Filter::new(size, stride));
 
     let pooled_input = avg_pool_1d.forward(input);
-    assert_eq!(
-        pooled_input,
-        tensor![[val!(0.5), val!(1.5)], [val!(3.5), val!(4.5)]]
-    );
+    assert_eq!(pooled_input, tensor![[0.5, 1.5], [3.5, 4.5]]);
 }
 
 #[test]
@@ -108,9 +87,9 @@ fn valid_avg_pooling_2d() {
     assert_eq!(
         pooled_input,
         tensor![
-            [[val!(2), val!(3)], [val!(8), val!(9)]],
-            [[val!(14), val!(15)], [val!(20), val!(21)]],
-            [[val!(26), val!(27)], [val!(32), val!(33)]]
+            [[2., 3.], [8., 9.]],
+            [[14., 15.], [20., 21.]],
+            [[26., 27.], [32., 33.]]
         ]
     );
 }
@@ -127,23 +106,8 @@ fn valid_avg_pooling_3d() {
     let pooled_input = avg_pool_3d.forward(input);
     assert_eq!(
         pooled_input,
-        Tensor::from_shape_vec(
-            (3, 1, 2, 2),
-            vec![
-                val!(8),
-                val!(9),
-                val!(14),
-                val!(15),
-                val!(32),
-                val!(33),
-                val!(38),
-                val!(39),
-                val!(56),
-                val!(57),
-                val!(62),
-                val!(63)
-            ]
-        )
-        .unwrap()
+        tensor![8., 9., 14., 15., 32., 33., 38., 39., 56., 57., 62., 63.]
+            .into_shape((3, 1, 2, 2))
+            .unwrap()
     );
 }
