@@ -1,5 +1,5 @@
 extern crate micrograd_rs;
-use micrograd_rs::optim::{Optimizer, SGDConfig, SGDCache};
+use micrograd_rs::optim::{Optimizer, SGDCache, SGDConfig};
 use micrograd_rs::prelude::*;
 
 const VALUES: [f64; 5] = [1., 1., 1., 1., 1.];
@@ -85,7 +85,7 @@ fn valid_sgd_learning_rate_maximize_with_momentum_update() {
             lr: 2.0,
             momentum: 1.0,
             cache: SGDCache {
-                prev_gradients: Some(Array1::from_vec(PREV_GRADS.to_vec()))
+                prev_gradients: Some(Array1::from_vec(PREV_GRADS.to_vec())),
             },
             ..Default::default()
         },
@@ -108,7 +108,7 @@ fn valid_sgd_learning_rate_maximize_with_dampend_momentum_update() {
             dampening: 0.5,
             momentum: 1.0,
             cache: SGDCache {
-                prev_gradients: Some(Array1::from_vec(PREV_GRADS.to_vec()))
+                prev_gradients: Some(Array1::from_vec(PREV_GRADS.to_vec())),
             },
             ..Default::default()
         },
