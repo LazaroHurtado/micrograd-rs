@@ -19,11 +19,11 @@ impl Linear {
 }
 
 impl Module<Ix1> for Linear {
-    fn parameters(&self) -> Vec<Value> {
+    fn parameters(&self) -> Tensor<Ix1> {
         let mut params = self.weights.clone().into_raw_vec();
         params.append(&mut self.biases.clone().into_raw_vec());
 
-        params
+        Tensor::from_vec(params)
     }
 
     fn forward(&self, input: Tensor<Ix1>) -> Tensor<Ix1> {

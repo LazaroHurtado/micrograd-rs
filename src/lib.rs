@@ -1,15 +1,18 @@
 #![crate_name = "micrograd_rs"]
 
+mod ops;
+
+pub mod optimizer;
+pub use optimizer as optim;
+
+mod criterion;
+pub use criterion::*;
+
 mod activation;
 pub use activation::*;
 
 mod modules;
 pub use modules::*;
-
-mod criterion;
-pub use criterion::*;
-
-mod ops;
 
 pub mod prelude;
 pub mod utils;

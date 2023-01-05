@@ -92,11 +92,11 @@ where
         }
     }
 
-    pub fn parameters(&self) -> Vec<Value> {
+    pub fn parameters(&self) -> Tensor<Ix1> {
         let mut params = self.weights.clone().into_raw_vec();
         params.push(self.bias.clone());
 
-        params
+        Tensor::from_vec(params)
     }
 
     pub fn convolve(&self, input: Tensor<E>) -> Tensor<D> {
@@ -157,13 +157,11 @@ where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D>,
 {
-    fn parameters(&self) -> Vec<Value> {
-        let mut params = vec![];
-
-        self.kernels.iter().for_each(|kernel| {
-            params.append(&mut kernel.parameters());
-        });
-        params
+    fn parameters(&self) -> Tensor<Ix1> {
+        self.kernels
+            .iter()
+            .flat_map(|kernel| kernel.parameters().to_vec())
+            .collect()
     }
 
     fn forward(&self, input: Tensor<E>) -> Tensor<E> {

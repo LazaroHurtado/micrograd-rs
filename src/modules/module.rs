@@ -4,8 +4,8 @@ pub trait Module<D>
 where
     D: Dimension,
 {
-    fn parameters(&self) -> Vec<Value> {
-        vec![]
+    fn parameters(&self) -> Tensor<Ix1> {
+        Tensor::from_vec(vec![])
     }
 
     fn forward(&self, input: Tensor<D>) -> Tensor<D>;

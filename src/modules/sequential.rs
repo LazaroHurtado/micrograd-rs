@@ -26,10 +26,10 @@ where
         Sequential { layers }
     }
 
-    pub fn parameters(&self) -> Vec<Value> {
+    pub fn parameters(&self) -> Tensor<Ix1> {
         self.layers
             .iter()
-            .flat_map(|layer| layer.parameters())
+            .flat_map(|layer| layer.parameters().to_vec())
             .collect()
     }
 
