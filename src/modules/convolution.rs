@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use super::Module;
 use crate::prelude::*;
 use crate::utils::WeightInit;

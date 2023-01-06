@@ -1,3 +1,5 @@
+#![allow(clippy::module_inception)]
+
 use super::{RMSPropConfig, SGDConfig};
 use crate::prelude::*;
 

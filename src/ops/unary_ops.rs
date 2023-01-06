@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::{Op, Value};
 
 pub enum UnaryOps {
