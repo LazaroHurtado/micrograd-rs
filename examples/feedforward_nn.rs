@@ -4,7 +4,7 @@ use micrograd_rs::prelude::*;
 use micrograd_rs::{Activation, Criterion, Linear, Module, Reduction, Sequential};
 
 fn main() {
-    let feedforward = sequential!(
+    let model = sequential!(
         Ix1,
         [
             Linear::new(3, 4),
@@ -27,7 +27,7 @@ fn main() {
 
     let criterion = Criterion::MSE;
     let mut optimizer = Optimizer::SGD(
-        feedforward.parameters(),
+        model.parameters(),
         SGDConfig {
             lr: 0.1,
             momentum: 0.3,
@@ -36,7 +36,7 @@ fn main() {
     );
 
     for epoch in 0..20 {
-        ypred = feedforward.forward_batch(xs.clone());
+        ypred = model.forward_batch(xs.clone());
         let loss: Value = criterion.loss(Reduction::Sum, ypred.clone(), ys.clone());
 
         optimizer.zero_grad();

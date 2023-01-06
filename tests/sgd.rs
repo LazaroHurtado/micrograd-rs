@@ -1,10 +1,10 @@
 extern crate micrograd_rs;
-use micrograd_rs::optim::{Optimizer, SGDCache, SGDConfig};
+use micrograd_rs::optim::{Optimizer, SGDConfig};
 use micrograd_rs::prelude::*;
+use approx::assert_abs_diff_eq;
 
 const VALUES: [f64; 5] = [1., 1., 1., 1., 1.];
 const GRADS: [f64; 5] = [1., 1., 1., 1., 1.];
-const PREV_GRADS: [f64; 5] = [2., 2., 2., 2., 2.];
 
 fn build_params() -> Tensor<Ix1> {
     VALUES
@@ -18,8 +18,14 @@ fn build_params() -> Tensor<Ix1> {
         .collect()
 }
 
+fn assert_params(params: &Tensor<Ix1>, actuals: Array<f64, Ix1>) {
+    for (param, actual) in params.iter().zip(actuals) {
+        assert_abs_diff_eq!(param.value(), actual, epsilon = 1e-6);
+    }
+}
+
 #[test]
-fn valid_sgd_learning_rate_minimize_update() {
+fn valid_sgd_learning_rate_update() {
     let params = build_params();
 
     let mut optim = Optimizer::SGD(
@@ -29,11 +35,14 @@ fn valid_sgd_learning_rate_minimize_update() {
             ..Default::default()
         },
     );
-    optim.step();
 
-    for param in params {
-        assert_eq!(param.value(), -1.0);
-    }
+    optim.step();
+    let first_step = vec![-1.0;5];
+    assert_params(&params, Array1::from_vec(first_step));
+
+    optim.step();
+    let second_step = vec![-3.0;5];
+    assert_params(&params, Array1::from_vec(second_step));
 }
 
 #[test]
@@ -48,35 +57,14 @@ fn valid_sgd_learning_rate_maximize_update() {
             ..Default::default()
         },
     );
-    optim.step();
 
-    for param in params {
-        assert_eq!(param.value(), 3.0);
-    }
+    optim.step();
+    let actuals = vec![3.0;5];
+    assert_params(&params, Array1::from_vec(actuals));
 }
 
 #[test]
-fn valid_sgd_learning_rate_maximize_with_empty_momentum_update() {
-    let params = build_params();
-
-    let mut optim = Optimizer::SGD(
-        params.clone(),
-        SGDConfig {
-            lr: 2.0,
-            momentum: 0.1,
-            maximize: true,
-            ..Default::default()
-        },
-    );
-    optim.step();
-
-    for param in params {
-        assert_eq!(param.value(), 3.0);
-    }
-}
-
-#[test]
-fn valid_sgd_learning_rate_maximize_with_momentum_update() {
+fn valid_sgd_learning_rate_with_momentum_update() {
     let params = build_params();
 
     let mut optim = Optimizer::SGD(
@@ -84,21 +72,21 @@ fn valid_sgd_learning_rate_maximize_with_momentum_update() {
         SGDConfig {
             lr: 2.0,
             momentum: 1.0,
-            cache: SGDCache {
-                prev_gradients: Some(Array1::from_vec(PREV_GRADS.to_vec())),
-            },
             ..Default::default()
         },
     );
-    optim.step();
 
-    for param in params {
-        assert_eq!(param.value(), -5.0);
-    }
+    optim.step();
+    let first_step = vec![-1.0;5];
+    assert_params(&params, Array1::from_vec(first_step));
+
+    optim.step();
+    let second_step = vec![-5.0;5];
+    assert_params(&params, Array1::from_vec(second_step));
 }
 
 #[test]
-fn valid_sgd_learning_rate_maximize_with_dampend_momentum_update() {
+fn valid_sgd_learning_rate_with_dampened_momentum_update() {
     let params = build_params();
 
     let mut optim = Optimizer::SGD(
@@ -107,21 +95,21 @@ fn valid_sgd_learning_rate_maximize_with_dampend_momentum_update() {
             lr: 1.0,
             dampening: 0.5,
             momentum: 1.0,
-            cache: SGDCache {
-                prev_gradients: Some(Array1::from_vec(PREV_GRADS.to_vec())),
-            },
             ..Default::default()
         },
     );
-    optim.step();
 
-    for param in params {
-        assert_eq!(param.value(), -1.5);
-    }
+    optim.step();
+    let first_step = vec![0.0;5];
+    assert_params(&params, Array1::from_vec(first_step));
+
+    optim.step();
+    let second_step = vec![-1.5;5];
+    assert_params(&params, Array1::from_vec(second_step));
 }
 
 #[test]
-fn valid_sgd_learning_rate_maximize_with_weight_decay_update() {
+fn valid_sgd_learning_rate_with_weight_decay_update() {
     let params = build_params();
 
     let mut optim = Optimizer::SGD(
@@ -132,9 +120,12 @@ fn valid_sgd_learning_rate_maximize_with_weight_decay_update() {
             ..Default::default()
         },
     );
+    
     optim.step();
+    let first_step = vec![-5.0;5];
+    assert_params(&params, Array1::from_vec(first_step));
 
-    for param in params {
-        assert_eq!(param.value(), -5.0);
-    }
+    optim.step();
+    let second_step = vec![13.0;5];
+    assert_params(&params, Array1::from_vec(second_step));
 }
