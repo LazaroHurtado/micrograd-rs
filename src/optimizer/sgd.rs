@@ -34,20 +34,23 @@ impl Optimizer {
         if let Self::SGD(params, config) = self {
             let params_n = params.len();
             let cache = &mut config.cache;
-            
-            let prev_grads = cache.prev_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
+
+            let prev_grads = cache
+                .prev_gradients
+                .get_or_insert(Array1::from_vec(vec![0.; params_n]));
 
             let grads = params.mapv(|param| param.grad_mut().value());
 
             for (i, (param, mut grad)) in params.iter_mut().zip(grads).enumerate() {
-                grad += param.value() * &config.weight_decay;
+                grad += param.value() * config.weight_decay;
 
                 if cache.time_step > 0 {
-                    prev_grads[i] = (config.momentum * prev_grads[i]) + ((1. - config.dampening) * grad);
+                    prev_grads[i] =
+                        (config.momentum * prev_grads[i]) + ((1. - config.dampening) * grad);
                 } else {
                     prev_grads[i] = grad;
                 }
-                
+
                 let step = config.lr * prev_grads[i];
 
                 match config.maximize {

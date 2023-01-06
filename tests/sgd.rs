@@ -1,7 +1,7 @@
 extern crate micrograd_rs;
+use approx::assert_abs_diff_eq;
 use micrograd_rs::optim::{Optimizer, SGDConfig};
 use micrograd_rs::prelude::*;
-use approx::assert_abs_diff_eq;
 
 const VALUES: [f64; 5] = [1., 1., 1., 1., 1.];
 const GRADS: [f64; 5] = [1., 1., 1., 1., 1.];
@@ -37,11 +37,11 @@ fn valid_sgd_learning_rate_update() {
     );
 
     optim.step();
-    let first_step = vec![-1.0;5];
+    let first_step = vec![-1.0; 5];
     assert_params(&params, Array1::from_vec(first_step));
 
     optim.step();
-    let second_step = vec![-3.0;5];
+    let second_step = vec![-3.0; 5];
     assert_params(&params, Array1::from_vec(second_step));
 }
 
@@ -59,7 +59,7 @@ fn valid_sgd_learning_rate_maximize_update() {
     );
 
     optim.step();
-    let actuals = vec![3.0;5];
+    let actuals = vec![3.0; 5];
     assert_params(&params, Array1::from_vec(actuals));
 }
 
@@ -77,11 +77,11 @@ fn valid_sgd_learning_rate_with_momentum_update() {
     );
 
     optim.step();
-    let first_step = vec![-1.0;5];
+    let first_step = vec![-1.0; 5];
     assert_params(&params, Array1::from_vec(first_step));
 
     optim.step();
-    let second_step = vec![-5.0;5];
+    let second_step = vec![-5.0; 5];
     assert_params(&params, Array1::from_vec(second_step));
 }
 
@@ -100,11 +100,11 @@ fn valid_sgd_learning_rate_with_dampened_momentum_update() {
     );
 
     optim.step();
-    let first_step = vec![0.0;5];
+    let first_step = vec![0.0; 5];
     assert_params(&params, Array1::from_vec(first_step));
 
     optim.step();
-    let second_step = vec![-1.5;5];
+    let second_step = vec![-1.5; 5];
     assert_params(&params, Array1::from_vec(second_step));
 }
 
@@ -120,12 +120,12 @@ fn valid_sgd_learning_rate_with_weight_decay_update() {
             ..Default::default()
         },
     );
-    
+
     optim.step();
-    let first_step = vec![-5.0;5];
+    let first_step = vec![-5.0; 5];
     assert_params(&params, Array1::from_vec(first_step));
 
     optim.step();
-    let second_step = vec![13.0;5];
+    let second_step = vec![13.0; 5];
     assert_params(&params, Array1::from_vec(second_step));
 }
