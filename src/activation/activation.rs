@@ -20,7 +20,7 @@ impl Activation {
     }
 }
 
-impl<D> Module<D> for Activation
+impl<D> Module<D, D> for Activation
 where
     D: Dimension,
 {

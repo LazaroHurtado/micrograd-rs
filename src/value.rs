@@ -1,14 +1,14 @@
-use super::ops::{BinaryOps, Op, UnaryOps};
+use super::ops::{BinaryOps, Op, Ops, UnaryOps};
 use ndarray::ScalarOperand;
 use num_traits::{One, Zero};
 use ordered_float::NotNan;
 
 use std::cell::{RefCell, RefMut};
 use std::f64::consts::E;
-use std::fmt;
 use std::iter::Sum;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use std::rc::Rc;
+use std::{fmt, mem};
 
 #[macro_export]
 macro_rules! values {
@@ -29,10 +29,11 @@ macro_rules! val {
     };
 }
 
+#[derive(Default)]
 pub struct Data {
     pub value: NotNan<f64>,
     grad: Option<Value>,
-    operation: Box<dyn Op>,
+    operation: Ops,
     back_pass: bool,
     requires_grad: bool,
 }
@@ -44,7 +45,7 @@ impl Value {
         let data = Data {
             value: NotNan::new(value).expect("Value cannot be NaN"),
             grad: None,
-            operation: Box::new(UnaryOps::NoOp),
+            operation: Ops::NoOp,
             back_pass: false,
             requires_grad: true,
         };
@@ -52,11 +53,11 @@ impl Value {
         Value(Rc::new(RefCell::new(data)))
     }
 
-    pub fn with_op<T: Op + 'static>(value: f64, operation: T) -> Self {
+    pub fn with_op<T: Op + Into<Ops>>(value: f64, operation: T) -> Self {
         let data = Data {
             value: NotNan::new(value).expect("Value cannot be NaN"),
             grad: None,
-            operation: Box::new(operation),
+            operation: operation.into(),
             back_pass: false,
             requires_grad: true,
         };
@@ -145,7 +146,7 @@ impl Value {
                 data.back_pass = false;
             }
 
-            let operation = &*source.0.borrow().operation;
+            let operation = &source.0.borrow().operation;
             operation.propagate(source);
         }
     }
@@ -157,7 +158,7 @@ impl Value {
         data.back_pass = true;
         data.grad = Some(Value::zero());
 
-        let operation = &*data.operation;
+        let operation = &data.operation;
         for operand in operation.variables() {
             if !operand.0.borrow().back_pass {
                 order.append(&mut operand.topo_sort());
@@ -171,6 +172,39 @@ impl Value {
 }
 
 impl ScalarOperand for Value {}
+
+impl Drop for Value {
+    fn drop(&mut self) {
+        if Rc::strong_count(&self.0) > 1 {
+            return;
+        }
+
+        let mut stack: Vec<Value> = vec![];
+        let grad_op = mem::take(&mut self.0.borrow_mut().grad);
+        if let Some(grad) = grad_op {
+            stack.push(grad);
+        }
+
+        let ops = mem::take(&mut self.0.borrow_mut().operation);
+        stack.extend(ops.into_inner());
+
+        while let Some(mut curr) = stack.pop() {
+            let mut data = mem::take(&mut curr.0);
+
+            if Rc::strong_count(&data) == 1 {
+                let curr = mem::take(&mut data);
+
+                let grad_op = mem::take(&mut curr.borrow_mut().grad);
+                if let Some(grad) = grad_op {
+                    stack.push(grad);
+                }
+
+                let ops = mem::take(&mut curr.borrow_mut().operation);
+                stack.extend(ops.into_inner());
+            }
+        }
+    }
+}
 
 impl Clone for Value {
     fn clone(&self) -> Self {

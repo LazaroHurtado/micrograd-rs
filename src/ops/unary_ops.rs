@@ -5,16 +5,22 @@ pub enum UnaryOps {
     Exp(Value),
     Log(Value),
     ReLu(Value),
-    NoOp,
 }
 
 impl Op for UnaryOps {
-    fn variables(&self) -> Vec<Value> {
+    fn into_inner(self) -> Vec<Value> {
         match self {
-            Self::Exp(value) => vec![value.clone()],
-            Self::Log(value) => vec![value.clone()],
-            Self::ReLu(value) => vec![value.clone()],
-            Self::NoOp => vec![],
+            Self::Exp(value) => vec![value],
+            Self::Log(value) => vec![value],
+            Self::ReLu(value) => vec![value],
+        }
+    }
+
+    fn variables(&self) -> Vec<&Value> {
+        match self {
+            Self::Exp(value) => vec![value],
+            Self::Log(value) => vec![value],
+            Self::ReLu(value) => vec![value],
         }
     }
 
@@ -39,7 +45,6 @@ impl Op for UnaryOps {
                     *unactivated.grad_mut() += grad * &one_if_greater_than_zero;
                 }
             }
-            Self::NoOp => (),
         };
     }
 }

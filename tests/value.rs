@@ -157,3 +157,14 @@ fn valid_exp_grads() {
         );
     }
 }
+
+#[test]
+fn valid_drop() {
+    let mut a = Value::from(0.01);
+
+    for _ in 0..500_000 {
+        a = &a + &a;
+    }
+
+    assert_eq!(drop(a), ());
+}

@@ -1,7 +1,6 @@
 Building core Deep Learning algorithms in Rust.
 
-It's kinda like the big brother version of the [karpathy/micrograd](https://github.com/karpathy/micrograd).
-Some key differences is that we support higher order gradients, tensors (through the use of the ndarray crate), and convolutional layers.
+It's kinda like the middle child of [karpathy/micrograd](https://github.com/karpathy/micrograd) and [geohot/tinygrad](https://github.com/geohot/tinygrad).
 
 ---
 
@@ -30,6 +29,5 @@ Any type of contribution is welcome as long as it adds value! i.e
   - Pooling Module
     - [~~Max Pooling~~](https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html)
     - [~~Average Pooling~~](https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html#torch.nn.AvgPool2d)
-  - [Flatten Module](https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html#torch.nn.Flatten)
   - Padding Support
   - Dilation Support

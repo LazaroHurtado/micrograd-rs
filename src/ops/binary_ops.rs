@@ -9,13 +9,23 @@ pub enum BinaryOps {
 }
 
 impl Op for BinaryOps {
-    fn variables(&self) -> Vec<Value> {
+    fn into_inner(self) -> Vec<Value> {
         match self {
-            Self::Add(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
-            Self::Sub(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
-            Self::Mul(lhs, rhs) => vec![lhs.clone(), rhs.clone()],
-            Self::Div(numer, denom) => vec![numer.clone(), denom.clone()],
-            Self::Pow(value, exponent) => vec![value.clone(), exponent.clone()],
+            Self::Add(lhs, rhs) => vec![lhs, rhs],
+            Self::Sub(lhs, rhs) => vec![lhs, rhs],
+            Self::Mul(lhs, rhs) => vec![lhs, rhs],
+            Self::Div(numer, denom) => vec![numer, denom],
+            Self::Pow(value, exponent) => vec![value, exponent],
+        }
+    }
+
+    fn variables(&self) -> Vec<&Value> {
+        match self {
+            Self::Add(lhs, rhs) => vec![lhs, rhs],
+            Self::Sub(lhs, rhs) => vec![lhs, rhs],
+            Self::Mul(lhs, rhs) => vec![lhs, rhs],
+            Self::Div(numer, denom) => vec![numer, denom],
+            Self::Pow(value, exponent) => vec![value, exponent],
         }
     }
 

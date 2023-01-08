@@ -154,7 +154,7 @@ where
     }
 }
 
-impl<D, E> Module<E> for Convolution<D, E>
+impl<D, E> Module<E, E> for Convolution<D, E>
 where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D>,

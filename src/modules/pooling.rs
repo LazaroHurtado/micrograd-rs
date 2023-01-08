@@ -54,7 +54,7 @@ where
     }
 }
 
-impl<D, E> Module<E> for Pooling<D>
+impl<D, E> Module<E, E> for Pooling<D>
 where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D> + RemoveAxis,

@@ -18,7 +18,7 @@ impl Linear {
     }
 }
 
-impl Module<Ix1> for Linear {
+impl Module<Ix1, Ix1> for Linear {
     fn parameters(&self) -> Tensor<Ix1> {
         let mut params = self.weights.clone().into_raw_vec();
         params.append(&mut self.biases.clone().into_raw_vec());
