@@ -2,7 +2,7 @@ use super::Criterion;
 use crate::prelude::*;
 
 impl Criterion {
-    pub fn mse<D>(&self, predicted: Tensor<D>, target: Tensor<D>) -> Tensor<D>
+    pub fn mse<D>(&self, predicted: &Tensor<D>, target: &Tensor<D>) -> Tensor<D>
     where
         D: Dimension,
     {

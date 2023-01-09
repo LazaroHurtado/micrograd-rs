@@ -19,7 +19,7 @@ fn valid_max_pooling_1d() {
     let stride = 1;
     let max_pool_1d = Pooling::Max(Filter::new(size, stride));
 
-    let pooled_input = max_pool_1d.forward(input);
+    let pooled_input = max_pool_1d.forward(&input);
     assert_eq!(pooled_input, tensor![[1., 2.], [4., 5.]]);
 }
 
@@ -32,7 +32,7 @@ fn valid_max_pooling_2d() {
     let stride = (2, 1);
     let max_pool_2d = Pooling::Max(Filter::new(size, stride));
 
-    let pooled_input = max_pool_2d.forward(input);
+    let pooled_input = max_pool_2d.forward(&input);
     assert_eq!(
         pooled_input,
         tensor![
@@ -52,7 +52,7 @@ fn valid_max_pooling_3d() {
     let stride = (1, 2, 1);
     let max_pool_3d = Pooling::Max(Filter::new(size, stride));
 
-    let pooled_input = max_pool_3d.forward(input);
+    let pooled_input = max_pool_3d.forward(&input);
     assert_eq!(
         pooled_input,
         tensor![16., 17., 22., 23., 40., 41., 46., 47., 64., 65., 70., 71.]
@@ -70,7 +70,7 @@ fn valid_avg_pooling_1d() {
     let stride = 1;
     let avg_pool_1d = Pooling::Average(Filter::new(size, stride));
 
-    let pooled_input = avg_pool_1d.forward(input);
+    let pooled_input = avg_pool_1d.forward(&input);
     assert_eq!(pooled_input, tensor![[0.5, 1.5], [3.5, 4.5]]);
 }
 
@@ -83,7 +83,7 @@ fn valid_avg_pooling_2d() {
     let stride = (2, 1);
     let avg_pool_2d = Pooling::Average(Filter::new(size, stride));
 
-    let pooled_input = avg_pool_2d.forward(input);
+    let pooled_input = avg_pool_2d.forward(&input);
     assert_eq!(
         pooled_input,
         tensor![
@@ -103,7 +103,7 @@ fn valid_avg_pooling_3d() {
     let stride = (1, 2, 1);
     let avg_pool_3d = Pooling::Average(Filter::new(size, stride));
 
-    let pooled_input = avg_pool_3d.forward(input);
+    let pooled_input = avg_pool_3d.forward(&input);
     assert_eq!(
         pooled_input,
         tensor![8., 9., 14., 15., 32., 33., 38., 39., 56., 57., 62., 63.]

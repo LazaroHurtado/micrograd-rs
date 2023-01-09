@@ -36,8 +36,8 @@ fn main() {
     );
 
     for epoch in 0..20 {
-        ypred = model.forward_batch(xs.clone());
-        let loss: Value = criterion.loss(Reduction::Sum, ypred.clone(), ys.clone());
+        ypred = model.forward_batch(&xs);
+        let loss: Value = criterion.loss(Reduction::Sum, &ypred, &ys);
 
         optimizer.zero_grad();
         loss.backward();

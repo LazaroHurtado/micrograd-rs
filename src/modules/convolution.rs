@@ -166,7 +166,7 @@ where
             .collect()
     }
 
-    fn forward(&self, input: Tensor<E>) -> Tensor<E> {
+    fn forward(&self, input: &Tensor<E>) -> Tensor<E> {
         let mut single_channel_dim = <D>::zeros(D::NDIM.unwrap());
         let mut output_channels = vec![];
 
@@ -211,7 +211,7 @@ mod tests {
         let mut conv1d = Conv1D::new(in_channels, out_channels, n, 1);
         conv1d.kernels[0].weights = weights;
 
-        assert_eq!(conv1d.forward(input.clone()), input);
+        assert_eq!(conv1d.forward(&input), input);
     }
 
     #[test]
@@ -229,7 +229,7 @@ mod tests {
         let mut conv2d = Conv2D::new(in_channels, out_channels, (n, m), (1, 1));
         conv2d.kernels[0].weights = weights;
 
-        assert_eq!(conv2d.forward(input.clone()), input);
+        assert_eq!(conv2d.forward(&input), input);
     }
 
     #[test]
@@ -247,6 +247,6 @@ mod tests {
         let mut conv3d = Conv3D::new(in_channels, out_channels, (n, m, l), (1, 1, 1));
         conv3d.kernels[0].weights = weights;
 
-        assert_eq!(conv3d.forward(input.clone()), input);
+        assert_eq!(conv3d.forward(&input), input);
     }
 }

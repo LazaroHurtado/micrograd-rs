@@ -11,7 +11,7 @@ fn valid_mse_loss_with_mean_reduction() {
     let criterion = Criterion::MSE;
 
     let actual_loss = 1.66200042;
-    let loss = criterion.loss(Reduction::Mean, input, target);
+    let loss = criterion.loss(Reduction::Mean, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }
@@ -24,7 +24,7 @@ fn valid_mse_loss_with_sum_reduction() {
     let criterion = Criterion::MSE;
 
     let actual_loss = 8.31;
-    let loss = criterion.loss(Reduction::Sum, input, target);
+    let loss = criterion.loss(Reduction::Sum, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }
@@ -46,7 +46,7 @@ fn valid_batched_mse_loss_with_mean_reduction() {
     let criterion = Criterion::MSE;
 
     let actual_loss = 1.83015025;
-    let loss = criterion.loss(Reduction::Mean, input, target);
+    let loss = criterion.loss(Reduction::Mean, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }
@@ -68,7 +68,7 @@ fn valid_batched_mse_loss_with_sum_reduction() {
     let criterion = Criterion::MSE;
 
     let actual_loss = 18.30150000;
-    let loss = criterion.loss(Reduction::Sum, input, target);
+    let loss = criterion.loss(Reduction::Sum, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }

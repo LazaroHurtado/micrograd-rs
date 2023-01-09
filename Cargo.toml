@@ -7,11 +7,11 @@ edition = "2021"
 name = "micrograd_rs"
 
 [dependencies]
-"rand" = "0.8"
-"rand_distr" = "0.4"
-"num-traits" = "0.2"
-"ndarray" = { git = "https://github.com/LazaroHurtado/ndarray", branch = "windows_stride_feature" }
-"ordered-float" = "1.0.1"
+rand = "0.8"
+rand_distr = "0.4"
+num-traits = "0.2"
+ndarray = { git = "https://github.com/LazaroHurtado/ndarray", branch = "windows_stride_feature" }
+ordered-float = "1.0.1"
 
 [dev-dependencies]
-"approx" = "0.4"
+approx = "0.4"

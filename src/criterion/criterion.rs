@@ -14,7 +14,7 @@ pub enum Criterion {
 }
 
 impl Criterion {
-    pub fn loss<D>(&self, reduction: Reduction, predicted: Tensor<D>, target: Tensor<D>) -> Value
+    pub fn loss<D>(&self, reduction: Reduction, predicted: &Tensor<D>, target: &Tensor<D>) -> Value
     where
         D: Dimension + RemoveAxis,
     {
@@ -29,7 +29,7 @@ impl Criterion {
         }
     }
 
-    pub fn element_wise_loss<D>(&self, predicted: Tensor<D>, target: Tensor<D>) -> Tensor<D>
+    pub fn element_wise_loss<D>(&self, predicted: &Tensor<D>, target: &Tensor<D>) -> Tensor<D>
     where
         D: Dimension + RemoveAxis,
     {
@@ -40,7 +40,7 @@ impl Criterion {
         }
     }
 
-    fn single_sample_loss<D>(&self, predicted: Tensor<D>, target: Tensor<D>) -> Tensor<D>
+    fn single_sample_loss<D>(&self, predicted: &Tensor<D>, target: &Tensor<D>) -> Tensor<D>
     where
         D: Dimension,
     {
@@ -50,7 +50,7 @@ impl Criterion {
         }
     }
 
-    fn batched_loss<D>(&self, predicted_batch: Tensor<D>, target_batch: Tensor<D>) -> Tensor<D>
+    fn batched_loss<D>(&self, predicted_batch: &Tensor<D>, target_batch: &Tensor<D>) -> Tensor<D>
     where
         D: Dimension + RemoveAxis,
     {
@@ -60,7 +60,7 @@ impl Criterion {
         for (predicted, target) in predicted_batch.outer_iter().zip(target_batch.outer_iter()) {
             batched_loss.append(
                 &mut self
-                    .single_sample_loss(predicted.to_owned(), target.to_owned())
+                    .single_sample_loss(&predicted.to_owned(), &target.to_owned())
                     .into_raw_vec(),
             );
         }

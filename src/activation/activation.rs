@@ -11,7 +11,7 @@ pub enum Activation {
 }
 
 impl Activation {
-    pub fn activate<D: Dimension>(&self, inputs: Tensor<D>) -> Tensor<D> {
+    pub fn activate<D: Dimension>(&self, inputs: &Tensor<D>) -> Tensor<D> {
         match self {
             Self::ReLu => inputs.mapv(|input| self.relu(input)),
             Self::Tanh => inputs.mapv(|input| self.tanh(input)),
@@ -24,7 +24,7 @@ impl<D> Module<D, D> for Activation
 where
     D: Dimension,
 {
-    fn forward(&self, outputs: Tensor<D>) -> Tensor<D> {
+    fn forward(&self, outputs: &Tensor<D>) -> Tensor<D> {
         self.activate(outputs)
     }
 }

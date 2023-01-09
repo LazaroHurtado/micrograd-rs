@@ -26,7 +26,7 @@ impl Module<Ix1, Ix1> for Linear {
         Tensor::from_vec(params)
     }
 
-    fn forward(&self, input: Tensor<Ix1>) -> Tensor<Ix1> {
+    fn forward(&self, input: &Tensor<Ix1>) -> Tensor<Ix1> {
         let weights_t = self.weights.t().into_owned();
 
         input.dot(&weights_t) + &self.biases

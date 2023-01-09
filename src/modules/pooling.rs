@@ -59,7 +59,7 @@ where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D> + RemoveAxis,
 {
-    fn forward(&self, input: Tensor<E>) -> Tensor<E> {
+    fn forward(&self, input: &Tensor<E>) -> Tensor<E> {
         let mut single_channel_dim = <D>::zeros(D::NDIM.unwrap());
         let mut output_channels = vec![];
 

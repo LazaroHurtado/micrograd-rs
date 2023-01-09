@@ -40,10 +40,10 @@ where
     pub fn forward(&self, inputs: Tensor<D>) -> Tensor<D> {
         self.layers
             .iter()
-            .fold(inputs, |output, layer| layer.forward(output))
+            .fold(inputs, |output, layer| layer.forward(&output))
     }
 
-    pub fn forward_batch(&self, batches: Tensor<E>) -> Tensor<E> {
+    pub fn forward_batch(&self, batches: &Tensor<E>) -> Tensor<E> {
         let mut outputs = vec![];
         let mut output_size = <D>::default();
 

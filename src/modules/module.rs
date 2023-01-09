@@ -9,5 +9,5 @@ where
         Tensor::from_vec(vec![])
     }
 
-    fn forward(&self, input: Tensor<In>) -> Tensor<Out>;
+    fn forward(&self, input: &Tensor<In>) -> Tensor<Out>;
 }

@@ -11,7 +11,7 @@ fn valid_cross_entropy_loss_for_class_indices_with_mean_reduction() {
     let criterion = Criterion::CrossEntropy;
 
     let actual_loss = 2.17853808;
-    let loss = criterion.loss(Reduction::Mean, input, target);
+    let loss = criterion.loss(Reduction::Mean, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }
@@ -24,7 +24,7 @@ fn valid_cross_entropy_loss_for_class_probabilities_with_mean_reduction() {
     let criterion = Criterion::CrossEntropy;
 
     let actual_loss = 2.19036555;
-    let loss = criterion.loss(Reduction::Mean, input, target);
+    let loss = criterion.loss(Reduction::Mean, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }
@@ -41,7 +41,7 @@ fn valid_batched_cross_entropy_loss_for_class_indices_with_sum_reduction() {
     let criterion = Criterion::CrossEntropy;
 
     let actual_loss = 20.53227325;
-    let loss = criterion.loss(Reduction::Sum, input, target);
+    let loss = criterion.loss(Reduction::Sum, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }
@@ -65,7 +65,7 @@ fn valid_batched_cross_entropy_loss_for_class_probabilities_with_sum_reduction()
     let criterion = Criterion::CrossEntropy;
 
     let actual_loss = 28.06797328;
-    let loss = criterion.loss(Reduction::Sum, input, target);
+    let loss = criterion.loss(Reduction::Sum, &input, &target);
 
     assert_abs_diff_eq!(loss.value(), actual_loss, epsilon = 1e-6);
 }

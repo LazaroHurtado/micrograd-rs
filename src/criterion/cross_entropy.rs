@@ -3,22 +3,22 @@ use crate::prelude::*;
 use crate::{Activation, Module};
 
 impl Criterion {
-    pub fn cross_entropy<D>(&self, logits: Tensor<D>, target: Tensor<D>) -> Tensor<D>
+    pub fn cross_entropy<D>(&self, logits: &Tensor<D>, target: &Tensor<D>) -> Tensor<D>
     where
         D: Dimension,
     {
         let probabilities = Activation::Softmax.forward(logits).into_raw_vec();
 
         match target.shape() {
-            [.., 1] => self.cross_entropy_with_class_indices(probabilities, target),
-            _ => self.cross_entropy_with_class_probs(probabilities, target),
+            [.., 1] => self.cross_entropy_with_class_indices(&probabilities, target),
+            _ => self.cross_entropy_with_class_probs(&probabilities, target),
         }
     }
 
     pub fn cross_entropy_with_class_indices<D>(
         &self,
-        probabilities: Vec<Value>,
-        class_indices: Tensor<D>,
+        probabilities: &[Value],
+        class_indices: &Tensor<D>,
     ) -> Tensor<D>
     where
         D: Dimension,
@@ -35,8 +35,8 @@ impl Criterion {
 
     pub fn cross_entropy_with_class_probs<D>(
         &self,
-        probabilities: Vec<Value>,
-        class_probabilities: Tensor<D>,
+        probabilities: &[Value],
+        class_probabilities: &Tensor<D>,
     ) -> Tensor<D>
     where
         D: Dimension,
@@ -45,9 +45,9 @@ impl Criterion {
         dim[0] = 1;
 
         let cross_entropy = probabilities
-            .into_iter()
+            .iter()
             .zip(class_probabilities)
-            .map(|(p, class_p)| -(p).log() * class_p)
+            .map(|(p, class_p)| &(-(p).log()) * class_p)
             .sum::<Value>();
 
         Tensor::from_shape_vec(dim, vec![cross_entropy]).unwrap()
