@@ -12,7 +12,7 @@ impl Linear {
         let weights = Tensor::from_shape_simple_fn((nout, nin), || {
             WeightInit::GlorotUniform.sample([nin, nout])
         });
-        let biases = Tensor::zeros(nout);
+        let biases = Tensor::from_shape_simple_fn(nout, Value::zero);
 
         Linear { weights, biases }
     }

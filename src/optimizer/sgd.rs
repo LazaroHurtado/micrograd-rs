@@ -33,18 +33,18 @@ impl Optimizer {
     pub fn sgd(&mut self) {
         if let Self::SGD(params, config) = self {
             let params_n = params.len();
-            let cache = &mut config.cache;
+            let SGDCache {
+                ref mut time_step,
+                ref mut prev_gradients,
+            } = config.cache;
 
-            let prev_grads = cache
-                .prev_gradients
-                .get_or_insert(Array1::from_vec(vec![0.; params_n]));
+            let prev_grads = prev_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
 
-            let grads = params.mapv(|param| param.grad_mut().value());
-
-            for (i, (param, mut grad)) in params.iter_mut().zip(grads).enumerate() {
+            for (i, param) in params.iter_mut().enumerate() {
+                let mut grad = param.grad().unwrap_or_else(Value::zero).value();
                 grad += param.value() * config.weight_decay;
 
-                if cache.time_step > 0 {
+                if *time_step > 0 {
                     prev_grads[i] =
                         (config.momentum * prev_grads[i]) + ((1. - config.dampening) * grad);
                 } else {
@@ -58,7 +58,7 @@ impl Optimizer {
                     false => *param.value_mut() -= step,
                 }
             }
-            cache.time_step += 1;
+            *time_step += 1;
         };
     }
 }
