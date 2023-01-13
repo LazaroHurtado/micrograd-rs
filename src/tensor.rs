@@ -4,7 +4,7 @@ use std::iter::zip;
 
 #[macro_export]
 macro_rules! tensor {
-    ([$($x:expr),*] $(, $mth:ident = $val:expr)*) => {
+    ([$($x:expr),*] $(, $mth:ident = $val:expr)+) => {
         array!($($x),*).mapv(|elem: f64| {
             let mut value = val!(elem);
             $( value.$mth($val) )*;

@@ -1,26 +1,18 @@
 extern crate micrograd_rs;
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Conv3D, Filter, Kernel, Module};
+use micrograd_rs::{Conv1D, Conv2D, Conv3D, Module};
 
 #[test]
-fn returns_all_parameters_in_a_single_kernel() {
-    let (in_channels, out_channels) = (3, 13);
-
-    let (n, m) = (3, 8);
-    let kernel: Kernel<Ix2, Ix3> = Kernel::new(in_channels, out_channels, (n, m), (1, 0));
-
-    let parameters_in_weight_tensor = in_channels * n * m;
-    let total_parameters = parameters_in_weight_tensor + 1; // one bias parameter in a kernel
-
-    assert_eq!(kernel.parameters().len(), total_parameters);
-}
-
-#[test]
-fn returns_all_parameters_in_each_kernel() {
+fn conv_returns_valid_parameter_count() {
     let (in_channels, out_channels) = (3, 13);
 
     let (n, m, k) = (3, 8, 4);
-    let conv3d = Conv3D::new(in_channels, out_channels, (n, m, k), (1, 0, 0));
+    let conv3d = Conv3D::new(
+        in_channels,
+        out_channels,
+        (0, 0, 0),
+        Filter::new((n, m, k), (1, 0, 0)),
+    );
 
     let parameters_per_kernel = in_channels * n * m * k;
     let total_kernel_parameters = out_channels * parameters_per_kernel;
@@ -31,19 +23,45 @@ fn returns_all_parameters_in_each_kernel() {
 }
 
 #[test]
-fn valid_kernel_output_size_for_input() {
-    let (input_h, input_w) = (7, 13);
+fn valid_conv1d_padding() {
+    let padding = 2;
+    let (in_channels, out_channels) = (1, 1);
 
-    let (n, m) = (2, 3);
-    let (padding, dilation, kernel_size, stride) = (0, 1, (n, m), (1, 2));
+    let conv1d = Conv1D::new(in_channels, out_channels, padding, Filter::new(3, 2));
 
-    let filter = Filter::new(kernel_size, stride);
+    let input = tensor![[1., 1., 1.]];
+    let padded_input = tensor![[0., 0., 1., 1., 1., 0., 0.]];
 
-    let output_h = ((input_h + 2 * padding - dilation * (kernel_size.0 - 1) - 1) / stride.0) + 1;
-    let output_w = ((input_w + 2 * padding - dilation * (kernel_size.1 - 1) - 1) / stride.1) + 1;
+    assert_eq!(conv1d.pad_input(input), padded_input);
+}
 
-    assert_eq!(
-        filter.output_shape(Dim((input_h, input_w))).slice(),
-        [output_h, output_w]
+#[test]
+fn valid_conv2d_padding() {
+    let padding = (1, 2);
+    let (in_channels, out_channels) = (1, 1);
+
+    let conv2d = Conv2D::new(
+        in_channels,
+        out_channels,
+        padding,
+        Filter::new((2, 2), (1, 1)),
     );
+
+    let input = tensor![[[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]];
+    let padded_input = tensor![
+        [
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 1., 2., 0., 0.],
+            [0., 0., 3., 4., 0., 0.],
+            [0., 0., 0., 0., 0., 0.]
+        ],
+        [
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 5., 6., 0., 0.],
+            [0., 0., 7., 8., 0., 0.],
+            [0., 0., 0., 0., 0., 0.]
+        ]
+    ];
+
+    assert_eq!(conv2d.pad_input(input), padded_input);
 }
