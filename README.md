@@ -30,4 +30,5 @@ Any type of contribution is welcome as long as it adds value! i.e
     - [~~Max Pooling~~](https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html)
     - [~~Average Pooling~~](https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html#torch.nn.AvgPool2d)
   - ~~Padding Support~~
-  - Dilation Support
+    - Padding Type
+  - ~~Dilation Support~~
