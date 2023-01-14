@@ -40,11 +40,8 @@ where
     pub fn convolve(&self, input: &Tensor<E>) -> Tensor<D> {
         let mut output = vec![];
 
-        let window_size = self.weights.dim();
-        let stride = self.filter.stride.insert_axis(Axis(0));
-
-        for window in input.windows_with_stride(window_size, stride.into_pattern()) {
-            let convolution = (&window * &self.weights) + self.bias.clone();
+        for filter in self.filter.receptive_field(input) {
+            let convolution = (&filter * &self.weights) + self.bias.clone();
             output.push(convolution.sum());
         }
 
@@ -64,7 +61,12 @@ mod tests {
         let in_channels = 1;
         let (n, m) = (2, 3);
 
-        let kernel_2x2: Kernel<Ix2, Ix3> = Kernel::new(in_channels, 4, Filter::new((n, m), (1, 0)));
+        let filter = Filter {
+            size: Dim((n, m)),
+            stride: Dim((1, 0)),
+            ..Default::default()
+        };
+        let kernel_2x2: Kernel<Ix2, Ix3> = Kernel::new(in_channels, 4, filter);
 
         assert_eq!(kernel_2x2.weights.shape(), &[in_channels, n, m]);
     }
@@ -80,8 +82,14 @@ mod tests {
 
         let n = 1;
         let weights = Tensor::ones((in_channels, n));
+
+        let filter = Filter {
+            size: Dim(n),
+            stride: Dim(1),
+            ..Default::default()
+        };
         let kernel = Kernel {
-            filter: Filter::new(n, 1),
+            filter,
             weights,
             bias: Value::zero(),
         };
@@ -107,8 +115,14 @@ mod tests {
 
         let (n, m) = (1, 1);
         let weights = Tensor::ones((in_channels, n, m));
+
+        let filter = Filter {
+            size: Dim((n, m)),
+            stride: Dim((1, 1)),
+            ..Default::default()
+        };
         let kernel = Kernel {
-            filter: Filter::new((m, m), (1, 1)),
+            filter,
             weights,
             bias: Value::zero(),
         };
@@ -134,8 +148,14 @@ mod tests {
 
         let (n, m, l) = (1, 1, 1);
         let weights = Tensor::ones((in_channels, n, m, l));
+
+        let filter = Filter {
+            size: Dim((n, m, l)),
+            stride: Dim((1, 1, 1)),
+            ..Default::default()
+        };
         let kernel = Kernel {
-            filter: Filter::new((n, m, l), (1, 1, 1)),
+            filter,
             weights,
             bias: Value::zero(),
         };

@@ -11,7 +11,7 @@ fn conv_returns_valid_parameter_count() {
         in_channels,
         out_channels,
         (0, 0, 0),
-        Filter::new((n, m, k), (1, 0, 0)),
+        Filter::new((n, m, k), (1, 0, 0), (1, 1, 1)),
     );
 
     let parameters_per_kernel = in_channels * n * m * k;
@@ -27,7 +27,7 @@ fn valid_conv1d_padding() {
     let padding = 2;
     let (in_channels, out_channels) = (1, 1);
 
-    let conv1d = Conv1D::new(in_channels, out_channels, padding, Filter::new(3, 2));
+    let conv1d = Conv1D::new(in_channels, out_channels, padding, Filter::new(3, 2, 1));
 
     let input = tensor![[1., 1., 1.]];
     let padded_input = tensor![[0., 0., 1., 1., 1., 0., 0.]];
@@ -44,7 +44,7 @@ fn valid_conv2d_padding() {
         in_channels,
         out_channels,
         padding,
-        Filter::new((2, 2), (1, 1)),
+        Filter::new((2, 2), (1, 1), (1, 1)),
     );
 
     let input = tensor![[[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]];
