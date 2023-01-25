@@ -5,34 +5,31 @@ use rand_distr::{Distribution, Normal};
 pub enum WeightInit {
     GlorotUniform,
     GlorotNormal,
-    HeUniform(FanMode),
-    HeNormal(FanMode),
+    HeUniform,
+    HeNormal,
 }
 
-pub enum FanMode {
-    In,
-    Out,
+pub struct Fanning(usize, usize);
+impl From<[usize; 2]> for Fanning {
+    fn from(val: [usize; 2]) -> Self {
+        Fanning(val[0], val[1])
+    }
 }
-
-// TODO: More elegant way of choosing fan mode for He W.I.?
-impl FanMode {
-    fn choose_fan(&self, fan_in: usize, fan_out: usize) -> usize {
-        match self {
-            FanMode::In => fan_in,
-            FanMode::Out => fan_out,
-        }
+impl From<[usize; 1]> for Fanning {
+    fn from(val: [usize; 1]) -> Self {
+        Fanning(val[0], val[0])
     }
 }
 
 impl WeightInit {
-    pub fn sample(&self, fanning: [usize; 2]) -> Value {
-        let [fan_in, fan_out] = fanning;
+    pub fn sample<F: Into<Fanning>>(&self, fanning: F) -> Value {
+        let Fanning(fan_in, fan_out) = fanning.into();
 
         match self {
             Self::GlorotUniform => self.glorot_uniform(fan_in, fan_out),
             Self::GlorotNormal => self.glorot_normal(fan_in, fan_out),
-            Self::HeUniform(mode) => self.he_uniform(mode.choose_fan(fan_in, fan_out)),
-            Self::HeNormal(mode) => self.he_normal(mode.choose_fan(fan_in, fan_out)),
+            Self::HeUniform => self.he_uniform(fan_in),
+            Self::HeNormal => self.he_normal(fan_in),
         }
     }
 
