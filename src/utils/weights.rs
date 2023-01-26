@@ -10,14 +10,14 @@ pub enum WeightInit {
 }
 
 pub struct Fanning(usize, usize);
-impl Into<Fanning> for [usize;2] {
-    fn into(self) -> Fanning {
-        Fanning(self[0], self[1])
+impl From<[usize; 2]> for Fanning {
+    fn from(val: [usize; 2]) -> Self {
+        Fanning(val[0], val[1])
     }
 }
-impl Into<Fanning> for [usize;1] {
-    fn into(self) -> Fanning {
-        Fanning(self[0], self[0])
+impl From<[usize; 1]> for Fanning {
+    fn from(val: [usize; 1]) -> Self {
+        Fanning(val[0], val[0])
     }
 }
 
