@@ -53,8 +53,8 @@ impl WeightInit {
         Value::from(weight)
     }
 
-    fn he_uniform(&self, fan_num: usize) -> Value {
-        let limit = (3.0 / (fan_num as f64)).sqrt();
+    fn he_uniform(&self, fan_in: usize) -> Value {
+        let limit = (6.0 / (fan_in as f64)).sqrt();
         let uniform = Uniform::new(-limit, limit);
 
         let mut rng = rand::thread_rng();
@@ -63,12 +63,32 @@ impl WeightInit {
         Value::from(weight)
     }
 
-    fn he_normal(&self, fan_num: usize) -> Value {
-        let stdev = 1.0 / (fan_num as f64).sqrt();
+    fn he_normal(&self, fan_in: usize) -> Value {
+        let stdev = (2.0 / (fan_in as f64)).sqrt();
         let normal = Normal::new(0.0, stdev).unwrap();
 
         let mut rng = rand::thread_rng();
 
+        let weight = normal.sample(&mut rng);
+        Value::from(weight)
+    }
+
+    fn lecun_uniform(&self, fan_in: usize) -> Value {
+        let limit = (3.0 / (fan_in as f64)).sqrt();
+        let uniform = Uniform::new(-limit, limit);
+
+        let mut rng = rand::thread_rng();
+
+        let weight = uniform.sample(&mut rng);
+        Value::from(weight)
+    }
+
+    fn lecun_normal(&self, fan_in: usize) -> Value {
+        let stdev = (1.0 / (fan_in as f64)).sqrt();
+        let normal = Normal::new(0.0, stdev).unwrap();
+        
+        let mut rng = rand::thread_rng();
+        
         let weight = normal.sample(&mut rng);
         Value::from(weight)
     }
