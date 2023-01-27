@@ -7,6 +7,8 @@ pub enum WeightInit {
     GlorotNormal,
     HeUniform,
     HeNormal,
+    LecunUniform,
+    LecunNormal,
 }
 
 pub struct Fanning(usize, usize);
@@ -30,6 +32,8 @@ impl WeightInit {
             Self::GlorotNormal => self.glorot_normal(fan_in, fan_out),
             Self::HeUniform => self.he_uniform(fan_in),
             Self::HeNormal => self.he_normal(fan_in),
+            Self::LecunUniform => self.lecun_uniform(fan_in),
+            Self::LecunNormal => self.lecun_normal(fan_in),
         }
     }
 
@@ -53,8 +57,8 @@ impl WeightInit {
         Value::from(weight)
     }
 
-    fn he_uniform(&self, fan_num: usize) -> Value {
-        let limit = (3.0 / (fan_num as f64)).sqrt();
+    fn he_uniform(&self, fan_in: usize) -> Value {
+        let limit = (6.0 / (fan_in as f64)).sqrt();
         let uniform = Uniform::new(-limit, limit);
 
         let mut rng = rand::thread_rng();
@@ -63,8 +67,28 @@ impl WeightInit {
         Value::from(weight)
     }
 
-    fn he_normal(&self, fan_num: usize) -> Value {
-        let stdev = 1.0 / (fan_num as f64).sqrt();
+    fn he_normal(&self, fan_in: usize) -> Value {
+        let stdev = (2.0 / fan_in as f64).sqrt();
+        let normal = Normal::new(0.0, stdev).unwrap();
+
+        let mut rng = rand::thread_rng();
+
+        let weight = normal.sample(&mut rng);
+        Value::from(weight)
+    }
+
+    fn lecun_uniform(&self, fan_in: usize) -> Value {
+        let limit = (3.0 / fan_in as f64).sqrt();
+        let uniform = Uniform::new(-limit, limit);
+
+        let mut rng = rand::thread_rng();
+
+        let weight = uniform.sample(&mut rng);
+        Value::from(weight)
+    }
+
+    fn lecun_normal(&self, fan_in: usize) -> Value {
+        let stdev = (1.0 / fan_in as f64).sqrt();
         let normal = Normal::new(0.0, stdev).unwrap();
 
         let mut rng = rand::thread_rng();

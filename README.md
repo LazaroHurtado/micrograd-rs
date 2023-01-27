@@ -18,8 +18,8 @@ Any type of contribution is welcome as long as it adds value! i.e
 
 - Weight Initializers
   - [~~Glorot~~](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/GlorotNormal)
-  - [He](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/HeNormal)
-  - [Lecun](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/LecunNormal)
+  - [~~He~~](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/HeNormal)
+  - [~~Lecun~~](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/LecunNormal)
 - [~~Create optimizer module for optimization algorithms~~](https://pytorch.org/docs/stable/optim.html)
   - [~~SGD~~](https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD)
   - [Adam](https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam)
