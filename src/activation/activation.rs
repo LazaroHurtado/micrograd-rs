@@ -8,11 +8,13 @@ pub enum Activation {
     ReLu,
     Tanh,
     Softmax,
+    Sigmoid,
 }
 
 impl Activation {
     pub fn activate<D: Dimension>(&self, inputs: &Tensor<D>) -> Tensor<D> {
         match self {
+            Self::Sigmoid => inputs.mapv(|input| self.sigmoid(input)),
             Self::ReLu => inputs.mapv(|input| self.relu(input)),
             Self::Tanh => inputs.mapv(|input| self.tanh(input)),
             Self::Softmax => self.softmax(inputs),
