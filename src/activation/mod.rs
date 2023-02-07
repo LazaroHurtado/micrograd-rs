@@ -1,7 +1,7 @@
 pub mod activation;
 mod relu;
+mod sigmoid;
 mod softmax;
 mod tanh;
-mod sigmoid;
 
 pub use self::activation::Activation;
