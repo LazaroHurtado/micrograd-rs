@@ -46,14 +46,13 @@ impl Op for Ops {
     }
 }
 
-impl From<BinaryOps> for Ops {
-    fn from(bin_ops: BinaryOps) -> Self {
-        Ops::Binary(bin_ops)
-    }
+macro_rules! impl_into_ops {
+    [$(($op: ty, $varient: ident)),*] => {
+        $(impl From<$op> for Ops {
+            fn from(bin_ops: $op) -> Self {
+                Ops::$varient(bin_ops)
+            }
+        })*
+    };
 }
-
-impl From<UnaryOps> for Ops {
-    fn from(unary_ops: UnaryOps) -> Self {
-        Ops::Unary(unary_ops)
-    }
-}
+impl_into_ops![(BinaryOps, Binary), (UnaryOps, Unary)];

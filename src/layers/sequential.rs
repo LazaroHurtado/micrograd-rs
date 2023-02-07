@@ -1,20 +1,20 @@
-use super::Module;
+use super::Layer;
 use crate::prelude::*;
 use ndarray::RemoveAxis;
 
 #[macro_export]
 macro_rules! sequential {
-    ($d: tt, [$($module: expr),*]) => {{
-        let mut modules: Vec<Box<dyn Module<$d, $d>>> = vec![];
+    ($d: tt, [$($layer: expr),*]) => {{
+        let mut layers: Vec<Box<dyn Layer<$d, $d>>> = vec![];
         $(
-            modules.push(Box::new($module));
+            layers.push(Box::new($layer));
         )*
-        Sequential::new(modules)
+        Sequential::new(layers)
     }};
 }
 
 pub struct Sequential<D> {
-    layers: Vec<Box<dyn Module<D, D>>>,
+    layers: Vec<Box<dyn Layer<D, D>>>,
 }
 
 impl<D, E> Sequential<D>
@@ -22,7 +22,7 @@ where
     E: Dimension<Smaller = D> + RemoveAxis,
     D: Dimension<Larger = E>,
 {
-    pub fn new(layers: Vec<Box<dyn Module<D, D>>>) -> Self {
+    pub fn new(layers: Vec<Box<dyn Layer<D, D>>>) -> Self {
         Sequential { layers }
     }
 

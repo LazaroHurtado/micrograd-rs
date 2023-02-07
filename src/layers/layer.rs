@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub trait Module<In, Out>
+pub trait Layer<In, Out>
 where
     In: Dimension,
     Out: Dimension,

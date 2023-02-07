@@ -1,6 +1,6 @@
 #![allow(clippy::module_inception)]
 
-use crate::modules::Module;
+use crate::layers::Layer;
 use crate::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
@@ -22,7 +22,7 @@ impl Activation {
     }
 }
 
-impl<D> Module<D, D> for Activation
+impl<D> Layer<D, D> for Activation
 where
     D: Dimension,
 {

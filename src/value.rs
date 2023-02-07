@@ -44,10 +44,8 @@ impl Value {
     pub fn new(value: f64) -> Self {
         let data = Data {
             value: NotNan::new(value).expect("Value cannot be NaN"),
-            grad: None,
-            operation: Ops::NoOp,
-            back_pass: false,
             requires_grad: true,
+            ..Default::default()
         };
 
         Value(Rc::new(RefCell::new(data)))
@@ -56,10 +54,9 @@ impl Value {
     pub fn with_op<T: Op + Into<Ops>>(value: f64, operation: T) -> Self {
         let data = Data {
             value: NotNan::new(value).expect("Value cannot be NaN"),
-            grad: None,
             operation: operation.into(),
-            back_pass: false,
             requires_grad: true,
+            ..Default::default()
         };
 
         Value(Rc::new(RefCell::new(data)))
@@ -79,14 +76,6 @@ impl Value {
         } else {
             other
         }
-    }
-
-    pub fn zero() -> Self {
-        Value::from(0.0)
-    }
-
-    pub fn one() -> Self {
-        Value::from(1.0)
     }
 
     pub fn value(&self) -> f64 {
@@ -133,7 +122,7 @@ impl Value {
 
     pub fn log(&self) -> Self {
         let value = self.value().ln();
-        Value::with_op(value, UnaryOps::Exp(self.clone()))
+        Value::with_op(value, UnaryOps::Log(self.clone()))
     }
 
     pub fn backward(&self) {
@@ -141,13 +130,9 @@ impl Value {
         self.0.borrow_mut().grad = Some(Value::one());
 
         for source in topo_order.iter().rev() {
-            {
-                let mut data = source.0.borrow_mut();
-                data.back_pass = false;
-            }
-
-            let operation = &source.0.borrow().operation;
-            operation.propagate(source);
+            let data = &source.0;
+            data.borrow_mut().back_pass = false;
+            data.borrow().operation.propagate(source);
         }
     }
 
@@ -166,12 +151,9 @@ impl Value {
         }
 
         order.push(self.clone());
-
         order
     }
 }
-
-impl ScalarOperand for Value {}
 
 impl Drop for Value {
     fn drop(&mut self) {
@@ -179,30 +161,34 @@ impl Drop for Value {
             return;
         }
 
-        let mut stack: Vec<Value> = vec![];
-        let grad_op = mem::take(&mut self.0.borrow_mut().grad);
-        if let Some(grad) = grad_op {
-            stack.push(grad);
-        }
+        let refrences = |data: &Rc<RefCell<Data>>| {
+            let grad_op = mem::take(&mut data.borrow_mut().grad);
+            let mut refrences = if let Some(grad) = grad_op {
+                vec![grad]
+            } else {
+                vec![]
+            };
 
-        let ops = mem::take(&mut self.0.borrow_mut().operation);
-        stack.extend(ops.into_inner());
+            let ops = mem::take(&mut data.borrow_mut().operation);
+            let vars = ops.into_inner();
+            refrences.extend(vars);
+            refrences
+        };
+        let mut stack: Vec<Value> = refrences(&self.0);
 
         while let Some(mut curr) = stack.pop() {
-            let mut data = mem::take(&mut curr.0);
+            let data = mem::take(&mut curr.0);
 
             if Rc::strong_count(&data) == 1 {
-                let curr = mem::take(&mut data);
-
-                let grad_op = mem::take(&mut curr.borrow_mut().grad);
-                if let Some(grad) = grad_op {
-                    stack.push(grad);
-                }
-
-                let ops = mem::take(&mut curr.borrow_mut().operation);
-                stack.extend(ops.into_inner());
+                stack.extend(refrences(&data))
             }
         }
+    }
+}
+
+impl Default for Value {
+    fn default() -> Self {
+        Value::zero()
     }
 }
 
@@ -218,9 +204,11 @@ impl PartialEq for Value {
     }
 }
 
+impl ScalarOperand for Value {}
+
 impl Zero for Value {
     fn zero() -> Self {
-        Value::zero()
+        Value::from(0.0)
     }
 
     fn set_zero(&mut self) {
@@ -234,7 +222,7 @@ impl Zero for Value {
 
 impl One for Value {
     fn one() -> Self {
-        Value::one()
+        Value::from(1.0)
     }
 
     fn set_one(&mut self) {

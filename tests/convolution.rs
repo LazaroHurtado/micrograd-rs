@@ -1,6 +1,6 @@
 extern crate micrograd_rs;
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Conv1D, Conv2D, Conv3D, Module};
+use micrograd_rs::{Conv1D, Conv2D, Conv3D, Layer};
 
 #[test]
 fn conv_returns_valid_parameter_count() {

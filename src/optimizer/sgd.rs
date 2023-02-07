@@ -41,7 +41,7 @@ impl Optimizer {
             let prev_grads = prev_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
 
             for (i, param) in params.iter_mut().enumerate() {
-                let mut grad = param.grad().unwrap_or_else(Value::zero).value();
+                let mut grad = param.grad().unwrap().value();
                 grad += param.value() * config.weight_decay;
 
                 if *time_step > 0 {

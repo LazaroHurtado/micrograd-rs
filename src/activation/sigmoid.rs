@@ -1,5 +1,5 @@
 use super::Activation;
-use crate::value::Value;
+use crate::prelude::{One, Value};
 
 impl Activation {
     pub fn sigmoid(&self, value: Value) -> Value {

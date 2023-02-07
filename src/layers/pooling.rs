@@ -1,4 +1,4 @@
-use super::{Filter, Module};
+use super::{Filter, Layer};
 use crate::prelude::*;
 use ndarray::RemoveAxis;
 
@@ -54,7 +54,7 @@ where
     }
 }
 
-impl<D, E> Module<E, E> for Pooling<D>
+impl<D, E> Layer<E, E> for Pooling<D>
 where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D> + RemoveAxis,

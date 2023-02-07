@@ -1,6 +1,4 @@
-#![allow(dead_code)]
-
-use super::{Filter, Kernel, Module};
+use super::{Filter, Kernel, Layer};
 use crate::prelude::*;
 use ndarray::{concatenate, IntoDimension, RemoveAxis};
 
@@ -57,7 +55,7 @@ where
     }
 }
 
-impl<D, E> Module<E, E> for Convolution<D, E>
+impl<D, E> Layer<E, E> for Convolution<D, E>
 where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D> + RemoveAxis,

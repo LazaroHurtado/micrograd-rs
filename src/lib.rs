@@ -11,8 +11,8 @@ pub use criterion::*;
 mod activation;
 pub use activation::*;
 
-mod modules;
-pub use modules::*;
+mod layers;
+pub use layers::*;
 
 pub mod prelude;
 pub mod utils;
