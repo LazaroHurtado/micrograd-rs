@@ -1,5 +1,6 @@
 pub mod activation;
 mod relu;
+mod sigmoid;
 mod softmax;
 mod tanh;
 

@@ -8,6 +8,7 @@ pub enum Activation {
     ReLu,
     Tanh,
     Softmax,
+    Sigmoid,
 }
 
 impl Activation {
@@ -16,6 +17,7 @@ impl Activation {
             Self::ReLu => inputs.mapv(|input| self.relu(input)),
             Self::Tanh => inputs.mapv(|input| self.tanh(input)),
             Self::Softmax => self.softmax(inputs),
+            Self::Sigmoid => inputs.mapv(|input| self.sigmoid(input)),
         }
     }
 }
