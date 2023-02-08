@@ -51,7 +51,10 @@ impl Optimizer {
             let avg_gradients = avg_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
 
             for (i, param) in params.iter_mut().enumerate() {
-                let mut grad = param.grad().unwrap().value();
+                let mut grad = param
+                    .grad()
+                    .unwrap_or_else(|| panic!("Optimizer cannot step when gradient is None."))
+                    .value();
                 grad += param.value() * config.weight_decay;
 
                 moving_avg[i] =

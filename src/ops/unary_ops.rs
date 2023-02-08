@@ -24,7 +24,9 @@ impl Op for UnaryOps {
     }
 
     fn propagate(&self, source: &Value) {
-        let grad = &source.grad().unwrap();
+        let grad = &source
+            .grad()
+            .unwrap_or_else(|| panic!("Cannot backpropagate when gradient is None"));
 
         match self {
             Self::Exp(exponent) => {
