@@ -1,7 +1,7 @@
 extern crate micrograd_rs;
 use micrograd_rs::optim::{Optimizer, SGDConfig};
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Activation, Criterion, Linear, Module, Reduction, Sequential};
+use micrograd_rs::{Activation, Criterion, Layer, Linear, Reduction, Sequential};
 
 fn main() {
     let model = sequential!(

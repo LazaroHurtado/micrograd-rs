@@ -1,6 +1,6 @@
 use super::Criterion;
 use crate::prelude::*;
-use crate::{Activation, Module};
+use crate::{Activation, Layer};
 
 impl Criterion {
     pub fn cross_entropy<D>(&self, logits: &Tensor<D>, target: &Tensor<D>) -> Tensor<D>

@@ -25,8 +25,8 @@ Any type of contribution is welcome as long as it adds value! i.e
   - [Adam](https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam)
   - [~~RMSProp~~](https://pytorch.org/docs/stable/generated/torch.optim.RMSprop.html#torch.optim.RMSprop)
 - Convolutional Neural Networks
-  - [~~Convolutional Module~~](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html)
-  - Pooling Module
+  - [~~Convolutional Layer~~](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html)
+  - Pooling Layer
     - [~~Max Pooling~~](https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html)
     - [~~Average Pooling~~](https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html#torch.nn.AvgPool2d)
   - ~~Padding Support~~

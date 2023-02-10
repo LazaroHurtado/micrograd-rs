@@ -54,7 +54,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Conv1D, Conv2D, Conv3D, Module};
+    use crate::{Conv1D, Conv2D, Conv3D, Layer};
 
     #[test]
     fn valid_kernel_weight_tensor_size() {

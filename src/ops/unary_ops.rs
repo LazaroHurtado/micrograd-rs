@@ -1,10 +1,9 @@
-#![allow(dead_code)]
 use super::{Op, Value};
 
 pub enum UnaryOps {
     Exp(Value),
     Log(Value),
-    ReLu(Value),
+    ReLU(Value),
 }
 
 impl Op for UnaryOps {
@@ -12,7 +11,7 @@ impl Op for UnaryOps {
         match self {
             Self::Exp(value) => vec![value],
             Self::Log(value) => vec![value],
-            Self::ReLu(value) => vec![value],
+            Self::ReLU(value) => vec![value],
         }
     }
 
@@ -20,12 +19,14 @@ impl Op for UnaryOps {
         match self {
             Self::Exp(value) => vec![value],
             Self::Log(value) => vec![value],
-            Self::ReLu(value) => vec![value],
+            Self::ReLU(value) => vec![value],
         }
     }
 
     fn propagate(&self, source: &Value) {
-        let grad = &source.grad().unwrap();
+        let grad = &source
+            .grad()
+            .unwrap_or_else(|| panic!("Cannot backpropagate when gradient is None"));
 
         match self {
             Self::Exp(exponent) => {
@@ -38,7 +39,7 @@ impl Op for UnaryOps {
                     *variable.grad_mut() += grad / source
                 }
             }
-            Self::ReLu(unactivated) => {
+            Self::ReLU(unactivated) => {
                 if unactivated.should_compute_grad() {
                     let one_if_greater_than_zero = source.value().ceil().min(1.0);
 

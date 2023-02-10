@@ -1,6 +1,6 @@
 extern crate micrograd_rs;
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Module, Pooling};
+use micrograd_rs::{Layer, Pooling};
 use ndarray::IntoDimension;
 use std::ops::Range;
 
