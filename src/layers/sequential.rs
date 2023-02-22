@@ -1,6 +1,7 @@
 use super::Layer;
 use crate::prelude::*;
 use ndarray::RemoveAxis;
+use std::collections::BTreeMap;
 
 #[macro_export]
 macro_rules! sequential {
@@ -58,5 +59,25 @@ where
         output_shape[0] = batches_d[0];
 
         Tensor::from_shape_vec(output_shape, outputs).unwrap()
+    }
+
+    pub fn state_dict(&self) -> BTreeMap<String, Vec<f64>> {
+        let mut state_dict: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+        let layers_iter = self.layers.iter();
+        let mut id = 0;
+        for layer in layers_iter {
+            let layer_name = layer.name();
+            if !layer_name.eq("NO NAME") {
+                id += 1;
+                let weights_key = format!("{}{}{}", layer_name, "weights", id);
+                let biases_key = format!("{}{}{}", layer_name, "biases", id);
+                let shape_key = format!("{}{}{}", layer_name, "shape", id);
+                state_dict.insert(weights_key, layer.weights().1);
+                state_dict.insert(biases_key, layer.biases());
+                state_dict.insert(shape_key, layer.weights().0);
+            }
+        }
+
+        state_dict
     }
 }

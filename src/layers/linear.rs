@@ -31,4 +31,24 @@ impl Layer<Ix1, Ix1> for Linear {
 
         input.dot(&weights_t) + &self.biases
     }
+
+    fn name(&self) -> String {
+        String::from("LinearLayer")
+    }
+
+    fn weights(&self) -> (Vec<f64>, Vec<f64>) {
+        let vec: Vec<f64> = self
+            .weights
+            .clone()
+            .into_iter()
+            .map(|v| v.value())
+            .collect();
+
+        let shape: Vec<f64> = self.weights.shape().iter().map(|&x| x as f64).collect();
+        (shape, vec)
+    }
+
+    fn biases(&self) -> Vec<f64> {
+        self.biases.clone().into_iter().map(|v| v.value()).collect()
+    }
 }

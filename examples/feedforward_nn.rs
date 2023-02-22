@@ -1,6 +1,7 @@
 extern crate micrograd_rs;
 use micrograd_rs::optim::{Optimizer, SGDConfig};
 use micrograd_rs::prelude::*;
+use micrograd_rs::serialize::{load, save};
 use micrograd_rs::{Activation, Criterion, Layer, Linear, Reduction, Sequential};
 
 fn main() {
@@ -24,6 +25,10 @@ fn main() {
     ];
     let ys = tensor!([[1.], [-1.], [-1.], [1.]], requires_grad = false);
     let mut ypred: Tensor<Ix2> = Tensor::zeros((4, 1));
+
+    let path = "checkpoint1.pkl";
+    save(model.state_dict(), path);
+    println!("{:?}", load(path));
 
     let criterion = Criterion::MSE;
     let mut optimizer = Optimizer::SGD(
