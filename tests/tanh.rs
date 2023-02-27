@@ -1,7 +1,8 @@
 extern crate micrograd_rs;
 use approx::assert_abs_diff_eq;
+use micrograd_rs::activation as Activation;
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Activation, Layer};
+use micrograd_rs::Layer;
 
 const VALUES: [f64; 6] = [-24.71, -0.73, -0.12, 71.23, 0.41, 0.0];
 

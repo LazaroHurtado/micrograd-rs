@@ -11,9 +11,23 @@ macro_rules! tensor {
             value
         })
     };
-    ($($x:expr),*) => {
+    [$($x:expr),*] => {
         array!($($x),*).mapv(|elem: f64| val!(elem))
-    }
+    };
+}
+
+#[macro_export]
+macro_rules! scalar {
+    ($x:expr, $(, $mth:ident = $val:expr)+) => {
+        arr0($x).mapv(|elem: f64| {
+            let mut value = val!(elem);
+            $( value.$mth($val) )*;
+            value
+        })
+    };
+    ($x:expr) => {
+        arr0($x).mapv(|elem: f64| val!(elem))
+    };
 }
 
 pub type Tensor<D> = ArrayBase<OwnedRepr<Value>, D>;

@@ -1,6 +1,6 @@
 use super::ops::{BinaryOps, Op, Ops, UnaryOps};
 use ndarray::ScalarOperand;
-use num_traits::{One, Zero};
+use num_traits::{FromPrimitive, One, Zero};
 use ordered_float::NotNan;
 
 use std::cell::{RefCell, RefMut};
@@ -115,6 +115,10 @@ impl Value {
         Value::with_op(value, BinaryOps::Pow(self.clone(), exponent))
     }
 
+    pub fn sqrt(&self) -> Self {
+        self.powf(0.5)
+    }
+
     pub fn exp(&self) -> Self {
         let value = E.powf(self.value());
         Value::with_op(value, UnaryOps::Exp(self.clone()))
@@ -201,6 +205,20 @@ impl Clone for Value {
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
         self.value() == other.value()
+    }
+}
+
+impl FromPrimitive for Value {
+    fn from_f64(n: f64) -> Option<Self> {
+        Some(Value::from(n))
+    }
+
+    fn from_i64(x: i64) -> Option<Self> {
+        Some(Value::from(x as f64))
+    }
+
+    fn from_u64(x: u64) -> Option<Self> {
+        Some(Value::from(x as f64))
     }
 }
 

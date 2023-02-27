@@ -1,7 +1,9 @@
 extern crate micrograd_rs;
+use micrograd_rs::activation as Activation;
+use micrograd_rs::criterion::{Criterion, Reduction, MSE};
 use micrograd_rs::optim::{Optimizer, SGDConfig};
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Activation, Criterion, Layer, Linear, Reduction, Sequential};
+use micrograd_rs::{Layer, Linear, Sequential};
 
 fn main() {
     let model = sequential!(
@@ -25,7 +27,6 @@ fn main() {
     let ys = tensor!([[1.], [-1.], [-1.], [1.]], requires_grad = false);
     let mut ypred: Tensor<Ix2> = Tensor::zeros((4, 1));
 
-    let criterion = Criterion::MSE;
     let mut optimizer = Optimizer::SGD(
         model.parameters(),
         SGDConfig {
@@ -37,7 +38,7 @@ fn main() {
 
     for epoch in 0..20 {
         ypred = model.forward_batch(&xs);
-        let loss: Value = criterion.loss(Reduction::Sum, &ypred, &ys);
+        let loss: Value = MSE::loss(Reduction::Sum, &ypred, &ys);
 
         optimizer.zero_grad();
         loss.backward();

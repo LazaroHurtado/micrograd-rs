@@ -5,11 +5,9 @@ mod ops;
 pub mod optimizer;
 pub use optimizer as optim;
 
-mod criterion;
-pub use criterion::*;
+pub mod criterion;
 
-mod activation;
-pub use activation::*;
+pub mod activation;
 
 mod layers;
 pub use layers::*;

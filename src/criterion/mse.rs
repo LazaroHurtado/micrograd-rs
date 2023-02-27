@@ -1,8 +1,10 @@
-use super::Criterion;
+use super::{Criterion, Reduction};
 use crate::prelude::*;
 
-impl Criterion {
-    pub fn mse<D>(&self, predicted: &Tensor<D>, target: &Tensor<D>) -> Tensor<D>
+pub struct MSE;
+
+impl MSE {
+    fn mse<D>(predicted: &Tensor<D>, target: &Tensor<D>) -> Tensor<D>
     where
         D: Dimension,
     {
@@ -14,5 +16,15 @@ impl Criterion {
         }
 
         Tensor::from_shape_vec(dim, mse).unwrap()
+    }
+}
+
+impl<D> Criterion<D, D> for MSE
+where
+    D: Dimension,
+{
+    fn loss(reduction: Reduction, predicted: &Tensor<D>, target: &Tensor<D>) -> Value {
+        let mse = Self::mse(predicted, target);
+        Self::reduce(reduction, &mse)
     }
 }

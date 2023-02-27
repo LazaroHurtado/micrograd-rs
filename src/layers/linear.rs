@@ -9,7 +9,7 @@ pub struct Linear {
 
 impl Linear {
     pub fn new(nin: usize, nout: usize) -> Self {
-        let weights = Tensor::from_shape_simple_fn((nout, nin), || {
+        let weights = Tensor::from_shape_simple_fn((nin, nout), || {
             WeightInit::GlorotUniform.sample([nin, nout])
         });
         let biases = Tensor::from_shape_simple_fn(nout, Value::zero);
@@ -27,8 +27,6 @@ impl Layer<Ix1, Ix1> for Linear {
     }
 
     fn forward(&self, input: &Tensor<Ix1>) -> Tensor<Ix1> {
-        let weights_t = self.weights.t().into_owned();
-
-        input.dot(&weights_t) + &self.biases
+        input.dot(&self.weights) + &self.biases
     }
 }

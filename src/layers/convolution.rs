@@ -36,8 +36,8 @@ where
         }
     }
 
-    pub fn pad_input(&self, input: Tensor<E>) -> Tensor<E> {
-        let mut padded_input = input;
+    pub fn pad_input(&self, input: &Tensor<E>) -> Tensor<E> {
+        let mut padded_input = input.clone();
 
         for (axis, &padding) in self.padding.slice().iter().enumerate() {
             let mut padding_dim = padded_input.raw_dim();
@@ -68,7 +68,7 @@ where
     }
 
     fn forward(&self, input: &Tensor<E>) -> Tensor<E> {
-        let padded_input = self.pad_input(input.clone());
+        let padded_input = self.pad_input(input);
 
         let mut single_channel_dim = <D>::zeros(D::NDIM.unwrap());
         let mut output_channels = vec![];
