@@ -4,10 +4,12 @@ use micrograd_rs::{Conv1D, Conv2D, Conv3D, Layer};
 
 #[test]
 fn conv_returns_valid_parameter_count() {
+    let name = "conv3d";
     let (in_channels, out_channels) = (3, 13);
 
     let (n, m, k) = (3, 8, 4);
     let conv3d = Conv3D::new(
+        name,
         in_channels,
         out_channels,
         (0, 0, 0),
@@ -24,10 +26,17 @@ fn conv_returns_valid_parameter_count() {
 
 #[test]
 fn valid_conv1d_padding() {
+    let name = "conv1d";
     let padding = 2;
     let (in_channels, out_channels) = (1, 1);
 
-    let conv1d = Conv1D::new(in_channels, out_channels, padding, Filter::new(3, 2, 1));
+    let conv1d = Conv1D::new(
+        name,
+        in_channels,
+        out_channels,
+        padding,
+        Filter::new(3, 2, 1),
+    );
 
     let input = tensor![[1., 1., 1.]];
     let padded_input = tensor![[0., 0., 1., 1., 1., 0., 0.]];
@@ -37,10 +46,12 @@ fn valid_conv1d_padding() {
 
 #[test]
 fn valid_conv2d_padding() {
+    let name = "conv2d";
     let padding = (1, 2);
     let (in_channels, out_channels) = (1, 1);
 
     let conv2d = Conv2D::new(
+        name,
         in_channels,
         out_channels,
         padding,

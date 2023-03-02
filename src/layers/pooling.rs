@@ -73,4 +73,8 @@ where
         output_dim[0] = input.raw_dim()[0];
         Tensor::from_shape_vec(output_dim, output_channels).unwrap()
     }
+
+    fn name(&self) -> String {
+        String::from("Pooling")
+    }
 }

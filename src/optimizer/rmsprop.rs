@@ -51,7 +51,7 @@ impl Optimizer for RMSProp {
         let moving_avg = moving_avg.get_or_insert(Array1::from_vec(vec![0.; params_n]));
         let avg_gradients = avg_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
 
-        for (i, param) in self.params.iter_mut().enumerate() {
+        for (i, param) in self.params.iter().enumerate() {
             let mut grad = param
                 .grad()
                 .unwrap_or_else(|| panic!("Optimizer cannot step when gradient is None."))

@@ -1,6 +1,9 @@
-use super::Layer;
+use super::{Layer, Model};
 use crate::prelude::*;
+use indexmap::IndexMap;
 use ndarray::RemoveAxis;
+use serde_pickle::{de, DeOptions};
+use std::fs::File;
 
 #[macro_export]
 macro_rules! sequential {
@@ -33,10 +36,6 @@ where
             .collect()
     }
 
-    pub fn zero_grad(&self) {
-        self.parameters().iter().for_each(|value| value.zero_grad());
-    }
-
     pub fn forward(&self, inputs: Tensor<D>) -> Tensor<D> {
         self.layers
             .iter()
@@ -58,5 +57,47 @@ where
         output_shape[0] = batches_d[0];
 
         Tensor::from_shape_vec(output_shape, outputs).unwrap()
+    }
+}
+
+impl<D: Dimension> Model for Sequential<D> {
+    fn state_dict(&self) -> IndexMap<String, Vec<f64>> {
+        let mut state_dict: IndexMap<String, Vec<f64>> = IndexMap::new();
+
+        let trainable_layers = self.layers.iter().filter(|x| x.is_trainable());
+
+        for layer in trainable_layers {
+            let (weight_key, bias_key) = (layer.name() + ".weight", layer.name() + ".bias");
+
+            let layer_weights = layer.weights().iter().map(|v| v.value()).collect();
+            state_dict.insert(weight_key, layer_weights);
+
+            let layer_biases = layer.biases().iter().map(|v| v.value()).collect();
+            state_dict.insert(bias_key, layer_biases);
+        }
+
+        state_dict
+    }
+
+    fn load_state_dict(&mut self, path: &str) {
+        let file = File::open(path).unwrap();
+        let state_dict: IndexMap<String, Vec<f64>> =
+            de::from_reader(file, DeOptions::new()).unwrap();
+
+        let trainable_layers = self.layers.iter().filter(|x| x.is_trainable());
+
+        for layer in trainable_layers {
+            let (weight_key, bias_key) = (layer.name() + ".weight", layer.name() + ".bias");
+
+            if state_dict.get(&weight_key).unwrap().len() != layer.weights().len() {
+                panic!("Wrong loaded weight count for layer \"{}\".", layer.name());
+            }
+            if state_dict.get(&bias_key).unwrap().len() != layer.biases().len() {
+                panic!("Wrong loaded bias count for layer \"{}\".", layer.name());
+            }
+
+            layer.set_weights(state_dict.get(&weight_key).unwrap());
+            layer.set_biases(state_dict.get(&bias_key).unwrap());
+        }
     }
 }

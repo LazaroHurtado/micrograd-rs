@@ -23,4 +23,8 @@ where
     fn forward(&self, input: &Tensor<D>) -> Tensor<D> {
         self.activate(input)
     }
+
+    fn name(&self) -> String {
+        String::from("Sigmoid")
+    }
 }
