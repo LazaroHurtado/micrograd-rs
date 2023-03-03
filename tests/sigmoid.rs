@@ -1,6 +1,7 @@
 extern crate micrograd_rs;
+use micrograd_rs::activation as Activation;
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Activation, Layer};
+use micrograd_rs::Layer;
 
 const VALUES: [f64; 5] = [-4.13, -0.0003123, 0.0, 1.0, 4.32];
 

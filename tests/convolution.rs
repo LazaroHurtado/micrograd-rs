@@ -32,7 +32,7 @@ fn valid_conv1d_padding() {
     let input = tensor![[1., 1., 1.]];
     let padded_input = tensor![[0., 0., 1., 1., 1., 0., 0.]];
 
-    assert_eq!(conv1d.pad_input(input), padded_input);
+    assert_eq!(conv1d.pad_input(&input), padded_input);
 }
 
 #[test]
@@ -63,5 +63,5 @@ fn valid_conv2d_padding() {
         ]
     ];
 
-    assert_eq!(conv2d.pad_input(input), padded_input);
+    assert_eq!(conv2d.pad_input(&input), padded_input);
 }
