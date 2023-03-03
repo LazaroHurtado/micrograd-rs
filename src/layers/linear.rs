@@ -37,18 +37,6 @@ impl Layer<Ix1, Ix1> for Linear {
         self.biases.clone()
     }
 
-    fn set_weights(&self, new_weights: &[f64]) {
-        for (v, &weight) in self.weights.iter().zip(new_weights) {
-            *v.value_mut() = weight.into();
-        }
-    }
-
-    fn set_biases(&self, new_biases: &[f64]) {
-        for (v, &bias) in self.biases.iter().zip(new_biases) {
-            *v.value_mut() = bias.into();
-        }
-    }
-
     fn is_trainable(&self) -> bool {
         true
     }

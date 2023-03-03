@@ -1,3 +1,4 @@
+mod batch_normalization;
 mod convolution;
 mod layer;
 mod linear;
@@ -7,6 +8,7 @@ mod sequential;
 
 use crate::utils::{Filter, Kernel};
 
+pub use self::batch_normalization::BatchNorm;
 pub use self::convolution::{Conv1D, Conv2D, Conv3D};
 pub use self::layer::Layer;
 pub use self::linear::Linear;
