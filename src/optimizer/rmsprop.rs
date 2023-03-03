@@ -10,7 +10,8 @@ pub struct RMSPropCache {
     pub avg_gradients: Option<Array1<f64>>,
 }
 
-pub struct RMSPropConfig {
+pub struct RMSProp {
+    pub params: Vec<Value>,
     pub lr: f64,
     pub alpha: f64,
     pub eps: f64,
@@ -21,9 +22,10 @@ pub struct RMSPropConfig {
     pub cache: RMSPropCache,
 }
 
-impl Default for RMSPropConfig {
+impl Default for RMSProp {
     fn default() -> Self {
-        RMSPropConfig {
+        RMSProp {
+            params: vec![],
             lr: 0.01,
             alpha: 0.99,
             eps: 1e-8,
@@ -36,46 +38,48 @@ impl Default for RMSPropConfig {
     }
 }
 
-impl Optimizer {
-    pub fn rmsprop(&mut self) {
-        if let Self::RMSProp(params, config) = self {
-            let params_n = params.len();
-            let RMSPropCache {
-                ref mut prev_gradients,
-                ref mut moving_avg,
-                ref mut avg_gradients,
-            } = config.cache;
+impl Optimizer for RMSProp {
+    fn step(&mut self) {
+        let params_n = self.params.len();
+        let RMSPropCache {
+            ref mut prev_gradients,
+            ref mut moving_avg,
+            ref mut avg_gradients,
+        } = self.cache;
 
-            let prev_grads = prev_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
-            let moving_avg = moving_avg.get_or_insert(Array1::from_vec(vec![0.; params_n]));
-            let avg_gradients = avg_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
+        let prev_grads = prev_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
+        let moving_avg = moving_avg.get_or_insert(Array1::from_vec(vec![0.; params_n]));
+        let avg_gradients = avg_gradients.get_or_insert(Array1::from_vec(vec![0.; params_n]));
 
-            for (i, param) in params.iter_mut().enumerate() {
-                let mut grad = param
-                    .grad()
-                    .unwrap_or_else(|| panic!("Optimizer cannot step when gradient is None."))
-                    .value();
-                grad += param.value() * config.weight_decay;
+        for (i, param) in self.params.iter_mut().enumerate() {
+            let mut grad = param
+                .grad()
+                .unwrap_or_else(|| panic!("Optimizer cannot step when gradient is None."))
+                .value();
+            grad += param.value() * self.weight_decay;
 
-                moving_avg[i] =
-                    (config.alpha * moving_avg[i]) + ((1. - config.alpha) * grad.pow(2));
-                let mut curr_moving_avg = moving_avg[i];
+            moving_avg[i] = (self.alpha * moving_avg[i]) + ((1. - self.alpha) * grad.pow(2));
+            let mut curr_moving_avg = moving_avg[i];
 
-                if config.centered {
-                    avg_gradients[i] =
-                        (config.alpha * avg_gradients[i]) + ((1. - config.alpha) * grad);
-                    curr_moving_avg -= avg_gradients[i].pow(2);
-                }
-
-                let momentum = config.momentum * prev_grads[i];
-                prev_grads[i] = momentum + (grad / (curr_moving_avg.sqrt() + config.eps));
-                let step = config.lr * prev_grads[i];
-
-                match config.maximize {
-                    true => *param.value_mut() += step,
-                    false => *param.value_mut() -= step,
-                }
+            if self.centered {
+                avg_gradients[i] = (self.alpha * avg_gradients[i]) + ((1. - self.alpha) * grad);
+                curr_moving_avg -= avg_gradients[i].pow(2);
             }
+
+            let momentum = self.momentum * prev_grads[i];
+            prev_grads[i] = momentum + (grad / (curr_moving_avg.sqrt() + self.eps));
+            let step = self.lr * prev_grads[i];
+
+            match self.maximize {
+                true => *param.value_mut() += step,
+                false => *param.value_mut() -= step,
+            }
+        }
+    }
+
+    fn zero_grad(&mut self) {
+        for param in self.params.iter() {
+            param.zero_grad();
         }
     }
 }
