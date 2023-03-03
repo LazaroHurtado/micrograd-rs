@@ -22,6 +22,29 @@ fn valid_filter_output_size_for_input() {
 }
 
 #[test]
+fn valid_receptive_field() {
+    let (filter_size, stride, dilation) = ((2, 2), (1, 2), (1, 1));
+    let filter = Filter::new(filter_size, stride, dilation);
+
+    let input = tensor![
+        [[1., 2., 3., 4.], [5., 6., 7., 8.], [9., 10., 11., 12.]],
+        [
+            [13., 14., 15., 16.,],
+            [17., 18., 19., 20.,],
+            [21., 22., 23., 24.,]
+        ]
+    ];
+    let output: Vec<Tensor<Ix3>> = vec![
+        tensor![[[1., 2.], [5., 6.]], [[13., 14.], [17., 18.]]],
+        tensor![[[3., 4.], [7., 8.]], [[15., 16.], [19., 20.]]],
+        tensor![[[5., 6.], [9., 10.]], [[17., 18.], [21., 22.]]],
+        tensor![[[7., 8.], [11., 12.]], [[19., 20.], [23., 24.]]],
+    ];
+
+    assert_eq!(filter.receptive_field(&input), output);
+}
+
+#[test]
 fn valid_receptive_field_with_dilation() {
     let (filter_size, stride, dilation) = ((2, 2), (2, 1), (2, 2));
     let filter = Filter::new(filter_size, stride, dilation);
