@@ -79,11 +79,13 @@ where
     }
 
     pub fn receptive_field(&self, input: &Tensor<E>) -> Vec<Tensor<E>> {
+        let depth = input.shape()[0];
         let mut filters = vec![];
 
         let dilated_size = self.filter_size();
-        let size = dilated_size.insert_axis(Axis(0));
         let stride = self.stride.insert_axis(Axis(0));
+        let mut size = dilated_size.insert_axis(Axis(0));
+        size[0] = depth;
 
         for filter in input.windows_with_stride(size, stride) {
             let dilated_filter = self.dilate_filter(&filter.to_owned());

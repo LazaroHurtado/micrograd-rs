@@ -41,18 +41,21 @@ where
         let mut output = vec![];
 
         for filter in self.filter.receptive_field(input) {
-            let convolution = (&filter * &self.weights) + self.bias.clone();
-            output.push(convolution.sum());
+            let convolution = &filter * &self.weights;
+            output.push(convolution.sum() + self.bias.clone());
         }
 
         let channelless_input = input.raw_dim().try_remove_axis(Axis(0));
         let channel_shape = self.filter.output_shape(channelless_input);
+
         Tensor::from_shape_vec(channel_shape, output).unwrap()
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use approx::assert_abs_diff_eq;
+
     use super::*;
     use crate::{Conv1D, Conv2D, Conv3D, Layer};
 
@@ -69,6 +72,41 @@ mod tests {
         let kernel_2x2: Kernel<Ix2, Ix3> = Kernel::new(in_channels, 4, filter);
 
         assert_eq!(kernel_2x2.weights.shape(), &[in_channels, n, m]);
+    }
+
+    #[test]
+    fn valid_convolution() {
+        let mut kernel: Kernel<Ix2, Ix3> = Kernel::new(1, 1, Filter::new((2, 2), (1, 1), (1, 1)));
+        kernel.weights = tensor![[[0.3954, -0.1740], [-0.1890, 0.4909]]];
+        kernel.bias = val!(-0.1188);
+
+        let input = tensor![[
+            [-1.5237, 0.9591, -2.0597, 0.8249],
+            [-0.4506, -0.6975, 1.0153, -0.2838],
+            [-0.5344, -0.5019, -0.4378, 0.3062],
+            [0.0597, 1.4820, 0.4158, 1.4295],
+            [0.0612, -0.4898, -0.2115, -0.4827]
+        ]];
+
+        let outputs = kernel.convolve(&input).mapv(|v| v.value()).into_raw_vec();
+        let actuals = vec![
+            -1.14539373,
+            1.24905421,
+            -1.40794710,
+            -0.32098335,
+            -0.69131062,
+            0.56508859,
+            0.47345934,
+            -0.31705584,
+            0.27797043,
+            -0.60507223,
+            0.38358044,
+            -0.40010961,
+        ];
+
+        for (output, actual) in outputs.into_iter().zip(actuals) {
+            assert_abs_diff_eq!(output, actual, epsilon = 1e-6);
+        }
     }
 
     #[test]
