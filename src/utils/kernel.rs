@@ -50,6 +50,14 @@ where
 
         Tensor::from_shape_vec(channel_shape, output).unwrap()
     }
+
+    pub fn weights(&self) -> Tensor<Ix1> {
+        self.weights.clone().into_shape(self.weights.len()).unwrap()
+    }
+
+    pub fn bias(&self) -> Value {
+        self.bias.clone()
+    }
 }
 
 #[cfg(test)]
@@ -112,6 +120,7 @@ mod tests {
     #[test]
     fn conv1d_with_size_one_and_weights_tensor_of_ones_should_output_input_tensor_when_one_channel()
     {
+        let name = String::from("conv1d");
         let (in_channels, out_channels) = (1, 1);
         let input_w = 13;
         let input = Tensor::from_shape_simple_fn((in_channels, input_w), || {
@@ -133,6 +142,7 @@ mod tests {
         };
 
         let conv1d = Conv1D {
+            name,
             in_channels,
             out_channels,
             padding: Dim(0),
@@ -145,6 +155,7 @@ mod tests {
     #[test]
     fn conv2d_with_size_one_and_weights_tensor_of_ones_should_output_input_tensor_when_one_channel()
     {
+        let name = String::from("conv2d");
         let (in_channels, out_channels) = (1, 1);
         let (input_h, input_w) = (7, 13);
         let input = Tensor::from_shape_simple_fn((in_channels, input_h, input_w), || {
@@ -166,6 +177,7 @@ mod tests {
         };
 
         let conv2d = Conv2D {
+            name,
             in_channels,
             out_channels,
             padding: Dim((0, 0)),
@@ -178,6 +190,7 @@ mod tests {
     #[test]
     fn conv3d_with_size_one_and_weights_tensor_of_ones_should_output_input_tensor_when_one_channel()
     {
+        let name = String::from("conv3d");
         let (in_channels, out_channels) = (1, 1);
         let (input_h, input_w, input_d) = (7, 13, 3);
         let input = Tensor::from_shape_simple_fn((in_channels, input_h, input_w, input_d), || {
@@ -199,6 +212,7 @@ mod tests {
         };
 
         let conv3d = Conv3D {
+            name,
             in_channels,
             out_channels,
             padding: Dim((0, 0, 0)),

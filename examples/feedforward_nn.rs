@@ -9,11 +9,11 @@ fn main() {
     let model = sequential!(
         Ix1,
         [
-            Linear::new(3, 4),
+            Linear::new("fc1", 3, 4),
             Activation::Tanh,
-            Linear::new(4, 4),
+            Linear::new("fc2", 4, 4),
             Activation::Tanh,
-            Linear::new(4, 1),
+            Linear::new("fc3", 4, 1),
             Activation::Tanh
         ]
     );

@@ -7,6 +7,7 @@ pub type Conv2D = Convolution<Ix2, Ix3>;
 pub type Conv3D = Convolution<Ix3, Ix4>;
 
 pub struct Convolution<D, E> {
+    pub name: String,
     pub in_channels: usize,
     pub out_channels: usize,
     pub padding: D,
@@ -19,16 +20,19 @@ where
     E: Dimension<Smaller = D> + RemoveAxis,
 {
     pub fn new<J: IntoDimension<Dim = D> + Clone>(
+        name: impl ToString,
         in_channels: usize,
         out_channels: usize,
         padding: J,
         filter: Filter<D>,
     ) -> Self {
+        let name = name.to_string();
         let kernels = (0..out_channels)
             .map(|_| Kernel::new(in_channels, out_channels, filter.clone()))
             .collect::<Vec<Kernel<D, E>>>();
 
         Convolution {
+            name,
             in_channels,
             out_channels,
             padding: padding.into_dimension(),
@@ -60,28 +64,56 @@ where
     D: Dimension<Larger = E>,
     E: Dimension<Smaller = D> + RemoveAxis,
 {
-    fn parameters(&self) -> Tensor<Ix1> {
-        self.kernels
-            .iter()
-            .flat_map(|kernel| kernel.parameters().to_vec())
-            .collect()
-    }
-
     fn forward(&self, input: &Tensor<E>) -> Tensor<E> {
         let padded_input = self.pad_input(input);
 
         let mut single_channel_dim = <D>::zeros(D::NDIM.unwrap());
         let mut output_channels = vec![];
 
-        self.kernels.iter().for_each(|kernel| {
+        for kernel in self.kernels.iter() {
             let channel = kernel.convolve(&padded_input);
 
             single_channel_dim = channel.raw_dim();
             output_channels.append(&mut channel.into_raw_vec());
-        });
+        }
 
         let mut output_dim = single_channel_dim.insert_axis(Axis(0));
         output_dim[0] = self.out_channels;
         Tensor::from_shape_vec(output_dim, output_channels).unwrap()
+    }
+
+    fn weights(&self) -> Tensor<Ix1> {
+        self.kernels
+            .iter()
+            .flat_map(|kernel| -> Tensor<Ix1> { kernel.weights() })
+            .collect()
+    }
+
+    fn biases(&self) -> Tensor<Ix1> {
+        self.kernels.iter().map(|kernel| kernel.bias()).collect()
+    }
+
+    fn set_weights(&self, new_weights: &[f64]) {
+        let kernel_weights = new_weights.chunks_exact(self.weights().len() / self.kernels.len());
+
+        for (kernel, kernel_weight) in self.kernels.iter().zip(kernel_weights) {
+            for (v, &weight) in kernel.weights().iter().zip(kernel_weight) {
+                *v.value_mut() = weight.into();
+            }
+        }
+    }
+
+    fn set_biases(&self, new_biases: &[f64]) {
+        for (kernel, &bias) in self.kernels.iter().zip(new_biases) {
+            *kernel.bias().value_mut() = bias.into();
+        }
+    }
+
+    fn is_trainable(&self) -> bool {
+        true
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
     }
 }
