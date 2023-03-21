@@ -36,10 +36,10 @@ where
             .collect()
     }
 
-    pub fn forward(&self, inputs: Tensor<D>) -> Tensor<D> {
+    pub fn forward(&self, inputs: &Tensor<D>) -> Tensor<D> {
         self.layers
             .iter()
-            .fold(inputs, |output, layer| layer.forward(&output))
+            .fold(inputs.clone(), |output, layer| layer.forward(&output))
     }
 
     pub fn forward_batch(&self, batches: &Tensor<E>) -> Tensor<E> {
@@ -47,7 +47,7 @@ where
         let mut output_size = <D>::default();
 
         for batch in batches.axis_iter(Axis(0)) {
-            let batch_output = self.forward(batch.to_owned());
+            let batch_output = self.forward(&batch.to_owned());
             output_size = batch_output.raw_dim();
             outputs.append(&mut batch_output.into_raw_vec());
         }

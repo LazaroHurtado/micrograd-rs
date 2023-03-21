@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use super::Layer;
 use crate::prelude::*;
 use crate::utils::WeightInit;
@@ -24,9 +26,14 @@ impl Linear {
     }
 }
 
-impl Layer<Ix1, Ix1> for Linear {
-    fn forward(&self, input: &Tensor<Ix1>) -> Tensor<Ix1> {
-        input.dot(&self.weights) + &self.biases
+impl<D, E> Layer<D, D> for Linear
+where
+    D: Dimension,
+    Tensor<D>: DotProd<Tensor<Ix2>, Output = Tensor<E>>,
+    Tensor<E>: Add<Tensor<Ix1>, Output = Tensor<D>>,
+{
+    fn forward(&self, input: &Tensor<D>) -> Tensor<D> {
+        input.dot(&self.weights) + self.biases.clone()
     }
 
     fn weights(&self) -> Tensor<Ix1> {
