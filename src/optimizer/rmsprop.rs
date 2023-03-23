@@ -12,7 +12,7 @@ pub struct RMSPropCache {
 
 pub struct RMSProp {
     pub params: Vec<Value>,
-    pub lr: f64,
+    pub lr: Value,
     pub alpha: f64,
     pub eps: f64,
     pub momentum: f64,
@@ -26,7 +26,7 @@ impl Default for RMSProp {
     fn default() -> Self {
         RMSProp {
             params: vec![],
-            lr: 0.01,
+            lr: val!(0.01),
             alpha: 0.99,
             eps: 1e-8,
             momentum: 0.0,
@@ -68,7 +68,7 @@ impl Optimizer for RMSProp {
 
             let momentum = self.momentum * prev_grads[i];
             prev_grads[i] = momentum + (grad / (curr_moving_avg.sqrt() + self.eps));
-            let step = self.lr * prev_grads[i];
+            let step = self.lr.value() * prev_grads[i];
 
             match self.maximize {
                 true => *param.value_mut() += step,
@@ -81,5 +81,9 @@ impl Optimizer for RMSProp {
         for param in self.params.iter() {
             param.zero_grad();
         }
+    }
+
+    fn lr(&self) -> Value {
+        self.lr.clone()
     }
 }

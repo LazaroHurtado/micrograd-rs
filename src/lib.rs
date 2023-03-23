@@ -5,6 +5,8 @@ mod ops;
 pub mod optimizer;
 pub use optimizer as optim;
 
+pub mod lr_scheduler;
+
 pub mod criterion;
 
 pub mod activation;
