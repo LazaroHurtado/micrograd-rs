@@ -8,7 +8,7 @@ use micrograd_rs::{Layer, Linear, Sequential};
 
 fn main() {
     let model = sequential!(
-        Ix1,
+        Ix2,
         [
             Linear::new("fc1", 3, 4),
             Activation::Tanh,
@@ -44,7 +44,7 @@ fn main() {
     );
 
     for epoch in 0..20 {
-        ypred = model.forward_batch(&xs);
+        ypred = model.forward(&xs);
         let loss: Value = MSE::loss(Reduction::Sum, &ypred, &ys);
 
         optimizer.zero_grad();
