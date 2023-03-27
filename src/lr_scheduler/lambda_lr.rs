@@ -11,7 +11,7 @@ where
 {
     const HAS_CLOSED_FORM: bool = false;
 
-    fn get_lr(&self, _lr: f64, last_epoch: usize) -> f64 {
+    fn get_lr(&self, _: f64, last_epoch: usize) -> f64 {
         self.base_lr * (self.lr_lambda)(last_epoch)
     }
 }

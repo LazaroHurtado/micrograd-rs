@@ -24,6 +24,11 @@ macro_rules! values {
 
 #[macro_export]
 macro_rules! val {
+    ($x: expr $(, $mth:ident = $val:expr)+) => {{
+        let mut value = Value::from($x);
+        $( value.$mth($val) )*;
+        value
+    }};
     ($x: expr) => {
         Value::from($x)
     };
@@ -103,7 +108,7 @@ impl Value {
     }
 
     pub fn powf<T: Into<f64>>(&self, raw_exponent: T) -> Self {
-        let mut exponent = val!(raw_exponent);
+        let mut exponent = val!(raw_exponent, requires_grad = false);
         exponent.requires_grad(false);
 
         let value = self.value().powf(exponent.value());

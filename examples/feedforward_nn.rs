@@ -1,7 +1,6 @@
 extern crate micrograd_rs;
 use micrograd_rs::activation as Activation;
 use micrograd_rs::criterion::{Criterion, Reduction, MSE};
-use micrograd_rs::lr_scheduler::{ConstantLR, LRScheduler};
 use micrograd_rs::optim::{Optimizer, SGD};
 use micrograd_rs::prelude::*;
 use micrograd_rs::{Layer, Linear, Sequential};
@@ -35,23 +34,13 @@ fn main() {
         ..Default::default()
     };
 
-    let mut scheduler = LRScheduler::new(
-        &optimizer,
-        ConstantLR {
-            total_iters: 4,
-            factor: 0.8,
-        },
-    );
-
     for epoch in 0..20 {
         ypred = model.forward(&xs);
         let loss: Value = MSE::loss(Reduction::Sum, &ypred, &ys);
 
         optimizer.zero_grad();
         loss.backward();
-
         optimizer.step();
-        scheduler.step();
 
         if epoch % 10 == 0 {
             println!("[EPOCH-{:?}] Loss: {:?}", epoch, loss.value());

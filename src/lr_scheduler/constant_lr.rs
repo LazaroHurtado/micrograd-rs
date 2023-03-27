@@ -1,8 +1,21 @@
 use super::Schedule;
 
 pub struct ConstantLR {
-    pub total_iters: usize,
-    pub factor: f64,
+    total_iters: usize,
+    factor: f64,
+}
+
+impl ConstantLR {
+    pub fn new(total_iters: usize, factor: f64) -> Self {
+        if !(0.0..=1.0).contains(&factor) {
+            panic!("Constant factor expected to be between 0.0 and 1.0");
+        }
+
+        ConstantLR {
+            total_iters,
+            factor,
+        }
+    }
 }
 
 impl Default for ConstantLR {

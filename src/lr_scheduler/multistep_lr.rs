@@ -16,30 +16,25 @@ impl Default for MultiStepLR {
 
 impl Schedule for MultiStepLR {
     fn get_lr(&self, lr: f64, last_epoch: usize) -> f64 {
-        let milestone = self
-            .milestones
-            .iter()
-            .position(|&epoch| epoch == last_epoch);
+        if self.milestones.contains(&last_epoch) {
+            let occurrences = self
+                .milestones
+                .iter()
+                .filter(|&milestone| *milestone == last_epoch)
+                .count() as i32;
 
-        match milestone {
-            None => lr,
-            Some(_) => {
-                let power =
-                    self.milestones.iter().fold(
-                        0,
-                        |acc, &epoch| if epoch == last_epoch { acc + 1 } else { acc },
-                    );
-
-                lr * self.gamma.powi(power)
-            }
+            lr * self.gamma.powi(occurrences)
+        } else {
+            lr
         }
     }
 
     fn get_closed_form_lr(&self, base_lr: f64, last_epoch: usize) -> f64 {
-        let power = self.milestones.iter().fold(
-            0,
-            |acc, &epoch| if epoch <= last_epoch { acc + 1 } else { acc },
-        );
+        let power = self
+            .milestones
+            .iter()
+            .filter(|&milestone| *milestone <= last_epoch)
+            .count() as i32;
 
         base_lr * self.gamma.powi(power)
     }

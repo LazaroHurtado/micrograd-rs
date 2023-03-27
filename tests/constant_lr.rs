@@ -12,13 +12,8 @@ fn valid_constant_lr_scheduler() {
         ..Default::default()
     };
 
-    let mut scheduler = LRScheduler::new(
-        &mut optim,
-        ConstantLR {
-            total_iters: 4,
-            factor: 0.5,
-        },
-    );
+    let (total_iters, factor) = (4, 0.5);
+    let mut scheduler = LRScheduler::new(&mut optim, ConstantLR::new(total_iters, factor));
 
     for epoch in 0..100 {
         let lr = scheduler.lr();
@@ -40,13 +35,8 @@ fn valid_closed_form_constant_lr_scheduler() {
         ..Default::default()
     };
 
-    let mut scheduler = LRScheduler::new(
-        &mut optim,
-        ConstantLR {
-            total_iters: 4,
-            factor: 0.5,
-        },
-    );
+    let (total_iters, factor) = (4, 0.5);
+    let mut scheduler = LRScheduler::new(&mut optim, ConstantLR::new(total_iters, factor));
 
     for epoch in 0..100 {
         let lr = scheduler.lr();

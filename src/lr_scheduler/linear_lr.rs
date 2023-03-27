@@ -6,6 +6,23 @@ pub struct LinearLR {
     pub end_factor: f64,
 }
 
+impl LinearLR {
+    pub fn new(total_iters: usize, start_factor: f64, end_factor: f64) -> Self {
+        if start_factor <= 0.0 || start_factor > 1.0 {
+            panic!("Starting factor expected to be greater than 0.0 and less or equal to 1.0");
+        }
+        if !(0.0..=1.0).contains(&end_factor) {
+            panic!("Ending factor expected to be between 0.0 and 1.0");
+        }
+
+        LinearLR {
+            total_iters,
+            start_factor,
+            end_factor,
+        }
+    }
+}
+
 impl Default for LinearLR {
     fn default() -> Self {
         LinearLR {
@@ -32,8 +49,10 @@ impl Schedule for LinearLR {
     }
 
     fn get_closed_form_lr(&self, base_lr: f64, last_epoch: usize) -> f64 {
+        let (last_epoch, total_iters) = (last_epoch as f64, self.total_iters as f64);
+
         let factor_range = self.end_factor - self.start_factor;
-        let percent_iters = (last_epoch.min(self.total_iters) as f64) / (self.total_iters as f64);
+        let percent_iters = last_epoch.min(total_iters) / total_iters;
 
         base_lr * (self.start_factor + factor_range * percent_iters)
     }
