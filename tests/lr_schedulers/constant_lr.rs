@@ -1,6 +1,6 @@
 extern crate micrograd_rs;
 use approx::assert_abs_diff_eq;
-use micrograd_rs::lr_scheduler::{ConstantLR, LRScheduler};
+use micrograd_rs::lr_schedulers::{ConstantLR, LRScheduler};
 use micrograd_rs::optim::SGD;
 use micrograd_rs::prelude::*;
 

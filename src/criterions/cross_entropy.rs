@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use ndarray::RemoveAxis;
 
 use super::{Criterion, Reduction};
-use crate::activation as Activation;
+use crate::activations as Activation;
 use crate::prelude::*;
 use crate::Layer;
 

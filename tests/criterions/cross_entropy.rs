@@ -1,6 +1,6 @@
 extern crate micrograd_rs;
 use approx::assert_abs_diff_eq;
-use micrograd_rs::criterion::{Criterion, CrossEntropy, Reduction};
+use micrograd_rs::criterions::{Criterion, CrossEntropy, Reduction};
 use micrograd_rs::prelude::*;
 
 #[test]

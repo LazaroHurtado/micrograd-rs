@@ -1,8 +1,8 @@
 extern crate micrograd_rs;
-use micrograd_rs::activation as Activation;
+use micrograd_rs::activations as Activation;
+use micrograd_rs::pooling::AvgPool;
 use micrograd_rs::prelude::*;
 use micrograd_rs::Conv2D;
-use micrograd_rs::Pooling;
 use micrograd_rs::{Layer, Linear, Model, Sequential};
 use std::fs;
 
@@ -65,7 +65,7 @@ fn valid_save_and_load_state_dict_for_convolutional_model() {
                 padding,
                 Filter::new((2, 2), (1, 1), (1, 1)),
             ),
-            Pooling::Average(Filter::new(pool_size, pool_stride, (1, 1))),
+            AvgPool::new(pool_size, pool_stride, (0, 0), (1, 1)),
             Activation::Sigmoid
         ]
     );
@@ -80,7 +80,7 @@ fn valid_save_and_load_state_dict_for_convolutional_model() {
                 padding,
                 Filter::new((2, 2), (1, 1), (1, 1)),
             ),
-            Pooling::Average(Filter::new(pool_size, pool_stride, (1, 1))),
+            AvgPool::new(pool_size, pool_stride, (0, 0), (1, 1)),
             Activation::Sigmoid
         ]
     );

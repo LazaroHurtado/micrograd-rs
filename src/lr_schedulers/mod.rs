@@ -1,4 +1,4 @@
-use crate::optimizer::Optimizer;
+use crate::optimizers::Optimizer;
 use crate::value::Value;
 
 mod constant_lr;

@@ -1,6 +1,7 @@
 extern crate micrograd_rs;
+use micrograd_rs::pooling::{AvgPool, MaxPool};
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Layer, Pooling};
+use micrograd_rs::Layer;
 use ndarray::IntoDimension;
 use std::ops::Range;
 
@@ -17,10 +18,10 @@ fn valid_max_pooling_1d() {
 
     let size = 2;
     let stride = 1;
-    let max_pool_1d = Pooling::Max(Filter::new(size, stride, 1));
+    let max_pool_1d = MaxPool::new(size, stride, 0, 1);
 
-    let pooled_input = max_pool_1d.forward(&input);
-    assert_eq!(pooled_input, tensor![[1., 2.], [4., 5.]]);
+    let pooled_input = max_pool_1d.forward(&input).into_raw_vec();
+    assert_eq!(pooled_input, values![1., 2., 4., 5.]);
 }
 
 #[test]
@@ -30,16 +31,16 @@ fn valid_max_pooling_2d() {
 
     let size = (2, 2);
     let stride = (2, 1);
-    let max_pool_2d = Pooling::Max(Filter::new(size, stride, (1, 1)));
+    let max_pool_2d = MaxPool {
+        size: Dim(size),
+        stride: Dim(stride),
+        ..Default::default()
+    };
 
-    let pooled_input = max_pool_2d.forward(&input);
+    let pooled_input = max_pool_2d.forward(&input).into_raw_vec();
     assert_eq!(
         pooled_input,
-        tensor![
-            [[4., 5.], [10., 11.]],
-            [[16., 17.], [22., 23.]],
-            [[28., 29.], [34., 35.]]
-        ]
+        values![4., 5., 10., 11., 16., 17., 22., 23., 28., 29., 34., 35.]
     );
 }
 
@@ -50,14 +51,12 @@ fn valid_max_pooling_3d() {
 
     let size = (2, 2, 2);
     let stride = (1, 2, 1);
-    let max_pool_3d = Pooling::Max(Filter::new(size, stride, (1, 1, 1)));
+    let max_pool_3d = MaxPool::new(size, stride, (0, 0, 0), (1, 1, 1));
 
-    let pooled_input = max_pool_3d.forward(&input);
+    let pooled_input = max_pool_3d.forward(&input).into_raw_vec();
     assert_eq!(
         pooled_input,
-        tensor![16., 17., 22., 23., 40., 41., 46., 47., 64., 65., 70., 71.]
-            .into_shape((3, 1, 2, 2))
-            .unwrap()
+        values![16., 17., 22., 23., 40., 41., 46., 47., 64., 65., 70., 71.]
     );
 }
 
@@ -68,10 +67,14 @@ fn valid_avg_pooling_1d() {
 
     let size = 2;
     let stride = 1;
-    let avg_pool_1d = Pooling::Average(Filter::new(size, stride, 1));
+    let avg_pool_1d = AvgPool {
+        size: Dim(size),
+        stride: Dim(stride),
+        ..Default::default()
+    };
 
-    let pooled_input = avg_pool_1d.forward(&input);
-    assert_eq!(pooled_input, tensor![[0.5, 1.5], [3.5, 4.5]]);
+    let pooled_input = avg_pool_1d.forward(&input).into_raw_vec();
+    assert_eq!(pooled_input, values![0.5, 1.5, 3.5, 4.5]);
 }
 
 #[test]
@@ -81,16 +84,12 @@ fn valid_avg_pooling_2d() {
 
     let size = (2, 2);
     let stride = (2, 1);
-    let avg_pool_2d = Pooling::Average(Filter::new(size, stride, (1, 1)));
+    let avg_pool_2d = AvgPool::new(size, stride, (0, 0), (1, 1));
 
-    let pooled_input = avg_pool_2d.forward(&input);
+    let pooled_input = avg_pool_2d.forward(&input).into_raw_vec();
     assert_eq!(
         pooled_input,
-        tensor![
-            [[2., 3.], [8., 9.]],
-            [[14., 15.], [20., 21.]],
-            [[26., 27.], [32., 33.]]
-        ]
+        values![2., 3., 8., 9., 14., 15., 20., 21., 26., 27., 32., 33.]
     );
 }
 
@@ -101,13 +100,15 @@ fn valid_avg_pooling_3d() {
 
     let size = (2, 2, 2);
     let stride = (1, 2, 1);
-    let avg_pool_3d = Pooling::Average(Filter::new(size, stride, (1, 1, 1)));
+    let avg_pool_3d = AvgPool {
+        size: Dim(size),
+        stride: Dim(stride),
+        ..Default::default()
+    };
 
-    let pooled_input = avg_pool_3d.forward(&input);
+    let pooled_input = avg_pool_3d.forward(&input).into_raw_vec();
     assert_eq!(
         pooled_input,
-        tensor![8., 9., 14., 15., 32., 33., 38., 39., 56., 57., 62., 63.]
-            .into_shape((3, 1, 2, 2))
-            .unwrap()
+        values![8., 9., 14., 15., 32., 33., 38., 39., 56., 57., 62., 63.]
     );
 }
