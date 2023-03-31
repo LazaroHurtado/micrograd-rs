@@ -30,7 +30,7 @@ fn valid_sgd_learning_rate_update() {
 
     let mut optim = SGD {
         params: params.clone(),
-        lr: 2.0,
+        lr: val!(2.0),
         ..Default::default()
     };
 
@@ -49,7 +49,7 @@ fn valid_sgd_learning_rate_maximize_update() {
 
     let mut optim = SGD {
         params: params.clone(),
-        lr: 2.0,
+        lr: val!(2.0),
         maximize: true,
         ..Default::default()
     };
@@ -65,7 +65,7 @@ fn valid_sgd_learning_rate_with_momentum_update() {
 
     let mut optim = SGD {
         params: params.clone(),
-        lr: 2.0,
+        lr: val!(2.0),
         momentum: 1.0,
         ..Default::default()
     };
@@ -85,7 +85,7 @@ fn valid_sgd_learning_rate_with_dampened_momentum_update() {
 
     let mut optim = SGD {
         params: params.clone(),
-        lr: 1.0,
+        lr: val!(1.0),
         dampening: 0.5,
         momentum: 1.0,
         ..Default::default()
@@ -106,7 +106,7 @@ fn valid_sgd_learning_rate_with_weight_decay_update() {
 
     let mut optim = SGD {
         params: params.clone(),
-        lr: 2.0,
+        lr: val!(2.0),
         weight_decay: 2.0,
         ..Default::default()
     };

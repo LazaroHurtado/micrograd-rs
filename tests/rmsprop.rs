@@ -30,7 +30,7 @@ fn valid_rmsprop_learning_rate_update() {
 
     let mut optim = RMSProp {
         params: params.clone(),
-        lr: 0.01,
+        lr: val!(0.01),
         ..Default::default()
     };
 
@@ -49,7 +49,7 @@ fn valid_rmsprop_learning_rate_maximize_update() {
 
     let mut optim = RMSProp {
         params: params.clone(),
-        lr: 0.01,
+        lr: val!(0.01),
         maximize: true,
         ..Default::default()
     };
@@ -65,7 +65,7 @@ fn valid_rmsprop_learning_rate_with_momentum_update() {
 
     let mut optim = RMSProp {
         params: params.clone(),
-        lr: 0.01,
+        lr: val!(0.01),
         momentum: 0.1,
         ..Default::default()
     };
@@ -85,7 +85,7 @@ fn valid_rmsprop_learning_rate_with_weight_decay_update() {
 
     let mut optim = RMSProp {
         params: params.clone(),
-        lr: 2.0,
+        lr: val!(2.0),
         weight_decay: 2.0,
         ..Default::default()
     };
@@ -105,7 +105,7 @@ fn valid_rmsprop_learning_rate_with_alpha_update() {
 
     let mut optim = RMSProp {
         params: params.clone(),
-        lr: 0.015,
+        lr: val!(0.015),
         alpha: 0.85,
         ..Default::default()
     };
@@ -125,7 +125,7 @@ fn valid_rmsprop_learning_rate_with_eps_update() {
 
     let mut optim = RMSProp {
         params: params.clone(),
-        lr: 0.015,
+        lr: val!(0.015),
         eps: 1e-4,
         ..Default::default()
     };
@@ -145,7 +145,7 @@ fn valid_rmsprop_learning_rate_centered_update() {
 
     let mut optim = RMSProp {
         params: params.clone(),
-        lr: 0.015,
+        lr: val!(0.015),
         weight_decay: 0.25,
         momentum: 0.1,
         alpha: 0.82,

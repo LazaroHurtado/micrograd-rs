@@ -16,7 +16,7 @@ macro_rules! values {
         let mut values = vec![];
 
         $(
-            values.push(Value::from($x));
+            values.push(val!($x));
         )*
         values
     }};
@@ -24,6 +24,11 @@ macro_rules! values {
 
 #[macro_export]
 macro_rules! val {
+    ($x: expr $(, $mth:ident = $val:expr)+) => {{
+        let mut value = Value::from($x);
+        $( value.$mth($val) )*;
+        value
+    }};
     ($x: expr) => {
         Value::from($x)
     };
@@ -103,7 +108,7 @@ impl Value {
     }
 
     pub fn powf<T: Into<f64>>(&self, raw_exponent: T) -> Self {
-        let mut exponent = Value::from(raw_exponent);
+        let mut exponent = val!(raw_exponent, requires_grad = false);
         exponent.requires_grad(false);
 
         let value = self.value().powf(exponent.value());
@@ -210,15 +215,15 @@ impl PartialEq for Value {
 
 impl FromPrimitive for Value {
     fn from_f64(n: f64) -> Option<Self> {
-        Some(Value::from(n))
+        Some(val!(n))
     }
 
     fn from_i64(x: i64) -> Option<Self> {
-        Some(Value::from(x as f64))
+        Some(val!(x as f64))
     }
 
     fn from_u64(x: u64) -> Option<Self> {
-        Some(Value::from(x as f64))
+        Some(val!(x as f64))
     }
 }
 
@@ -226,7 +231,7 @@ impl ScalarOperand for Value {}
 
 impl Zero for Value {
     fn zero() -> Self {
-        Value::from(0.0)
+        val!(0.0)
     }
 
     fn set_zero(&mut self) {
@@ -240,7 +245,7 @@ impl Zero for Value {
 
 impl One for Value {
     fn one() -> Self {
-        Value::from(1.0)
+        val!(1.0)
     }
 
     fn set_one(&mut self) {
@@ -314,7 +319,7 @@ macro_rules! impl_binary_ops {
             type Output = Value;
 
             fn $mth(self, rhs: T) -> Self::Output {
-                let mut rhs_val = Value::from(rhs);
+                let mut rhs_val = val!(rhs);
                 rhs_val.requires_grad(false);
 
                 let value = self.value() $operator rhs_val.value();
@@ -328,7 +333,7 @@ macro_rules! impl_binary_ops {
             type Output = Value;
 
             fn $mth(self, rhs: &'a T) -> Self::Output {
-                let mut rhs_val = Value::from(*rhs);
+                let mut rhs_val = val!(*rhs);
                 rhs_val.requires_grad(false);
 
                 let value = self.value() $operator rhs_val.value();

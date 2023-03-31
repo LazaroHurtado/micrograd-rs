@@ -1,4 +1,4 @@
-use crate::value::Value;
+use crate::{val, value::Value};
 use rand::distributions::Uniform;
 use rand_distr::{Distribution, Normal};
 
@@ -44,7 +44,7 @@ impl WeightInit {
         let mut rng = rand::thread_rng();
 
         let weight = uniform.sample(&mut rng);
-        Value::from(weight)
+        val!(weight)
     }
 
     fn glorot_normal(&self, fan_in: usize, fan_out: usize) -> Value {
@@ -54,7 +54,7 @@ impl WeightInit {
         let mut rng = rand::thread_rng();
 
         let weight = normal.sample(&mut rng);
-        Value::from(weight)
+        val!(weight)
     }
 
     fn he_uniform(&self, fan_in: usize) -> Value {
@@ -64,7 +64,7 @@ impl WeightInit {
         let mut rng = rand::thread_rng();
 
         let weight = uniform.sample(&mut rng);
-        Value::from(weight)
+        val!(weight)
     }
 
     fn he_normal(&self, fan_in: usize) -> Value {
@@ -74,7 +74,7 @@ impl WeightInit {
         let mut rng = rand::thread_rng();
 
         let weight = normal.sample(&mut rng);
-        Value::from(weight)
+        val!(weight)
     }
 
     fn lecun_uniform(&self, fan_in: usize) -> Value {
@@ -84,7 +84,7 @@ impl WeightInit {
         let mut rng = rand::thread_rng();
 
         let weight = uniform.sample(&mut rng);
-        Value::from(weight)
+        val!(weight)
     }
 
     fn lecun_normal(&self, fan_in: usize) -> Value {
@@ -94,6 +94,6 @@ impl WeightInit {
         let mut rng = rand::thread_rng();
 
         let weight = normal.sample(&mut rng);
-        Value::from(weight)
+        val!(weight)
     }
 }

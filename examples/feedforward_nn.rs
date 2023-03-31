@@ -29,7 +29,7 @@ fn main() {
 
     let mut optimizer = SGD {
         params: model.parameters().into_raw_vec(),
-        lr: 0.1,
+        lr: val!(0.1),
         momentum: 0.3,
         ..Default::default()
     };

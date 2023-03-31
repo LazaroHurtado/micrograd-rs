@@ -9,7 +9,7 @@ pub struct SGDCache {
 
 pub struct SGD {
     pub params: Vec<Value>,
-    pub lr: f64,
+    pub lr: Value,
     pub momentum: f64,
     pub dampening: f64,
     pub weight_decay: f64,
@@ -21,7 +21,7 @@ impl Default for SGD {
     fn default() -> Self {
         SGD {
             params: vec![],
-            lr: 0.01,
+            lr: val!(0.01),
             momentum: 0.0,
             dampening: 0.0,
             weight_decay: 0.0,
@@ -54,7 +54,7 @@ impl Optimizer for SGD {
                 prev_grads[i] = grad;
             }
 
-            let step = self.lr * prev_grads[i];
+            let step = self.lr.value() * prev_grads[i];
 
             match self.maximize {
                 true => *param.value_mut() += step,
@@ -68,5 +68,9 @@ impl Optimizer for SGD {
         for param in self.params.iter() {
             param.zero_grad();
         }
+    }
+
+    fn lr(&self) -> Value {
+        self.lr.clone()
     }
 }
