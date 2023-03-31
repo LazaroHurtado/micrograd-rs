@@ -12,13 +12,11 @@ fn valid_linear_lr_scheduler() {
         ..Default::default()
     };
 
+    let (total_iters, start_factor, end_factor) = (4, 0.5, 1.0);
+
     let mut scheduler = LRScheduler::new(
         &mut optim,
-        LinearLR {
-            total_iters: 4,
-            start_factor: 0.5,
-            end_factor: 1.0,
-        },
+        LinearLR::new(total_iters, start_factor, end_factor),
     );
 
     for epoch in 0..10 {
@@ -44,13 +42,11 @@ fn valid_closed_form_linear_lr_scheduler() {
         ..Default::default()
     };
 
+    let (total_iters, start_factor, end_factor) = (4, 0.5, 1.0);
+
     let mut scheduler = LRScheduler::new(
         &mut optim,
-        LinearLR {
-            total_iters: 4,
-            start_factor: 0.5,
-            end_factor: 1.0,
-        },
+        LinearLR::new(total_iters, start_factor, end_factor),
     );
 
     for epoch in 0..10 {
@@ -66,4 +62,60 @@ fn valid_closed_form_linear_lr_scheduler() {
 
         scheduler.step_with(epoch + 1);
     }
+}
+
+#[test]
+#[should_panic]
+fn start_factor_equals_zero() {
+    let optim = SGD {
+        params: vec![Value::from(0.0)],
+        lr: val!(0.05),
+        ..Default::default()
+    };
+
+    let (total_iters, start_factor, end_factor) = (4, 0.0, 1.0);
+
+    LRScheduler::new(&optim, LinearLR::new(total_iters, start_factor, end_factor));
+}
+
+#[test]
+#[should_panic]
+fn start_factor_greater_than_one() {
+    let optim = SGD {
+        params: vec![Value::from(0.0)],
+        lr: val!(0.05),
+        ..Default::default()
+    };
+
+    let (total_iters, start_factor, end_factor) = (4, 1.1, 1.0);
+
+    LRScheduler::new(&optim, LinearLR::new(total_iters, start_factor, end_factor));
+}
+
+#[test]
+#[should_panic]
+fn end_factor_less_than_zero() {
+    let optim = SGD {
+        params: vec![Value::from(0.0)],
+        lr: val!(0.05),
+        ..Default::default()
+    };
+
+    let (total_iters, start_factor, end_factor) = (4, 0.5, -0.1);
+
+    LRScheduler::new(&optim, LinearLR::new(total_iters, start_factor, end_factor));
+}
+
+#[test]
+#[should_panic]
+fn end_factor_greater_than_one() {
+    let optim = SGD {
+        params: vec![Value::from(0.0)],
+        lr: val!(0.05),
+        ..Default::default()
+    };
+
+    let (total_iters, start_factor, end_factor) = (4, 0.5, 1.1);
+
+    LRScheduler::new(&optim, LinearLR::new(total_iters, start_factor, end_factor));
 }

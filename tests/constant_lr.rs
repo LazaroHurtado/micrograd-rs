@@ -49,3 +49,31 @@ fn valid_closed_form_constant_lr_scheduler() {
         scheduler.step_with(epoch + 1);
     }
 }
+
+#[test]
+#[should_panic]
+fn factor_less_than_zero() {
+    let optim = SGD {
+        params: vec![Value::from(0.0)],
+        lr: val!(0.05),
+        ..Default::default()
+    };
+
+    let (total_iters, factor) = (4, -0.1);
+
+    LRScheduler::new(&optim, ConstantLR::new(total_iters, factor));
+}
+
+#[test]
+#[should_panic]
+fn factor_greater_than_one() {
+    let optim = SGD {
+        params: vec![Value::from(0.0)],
+        lr: val!(0.05),
+        ..Default::default()
+    };
+
+    let (total_iters, factor) = (4, 1.1);
+
+    LRScheduler::new(&optim, ConstantLR::new(total_iters, factor));
+}
