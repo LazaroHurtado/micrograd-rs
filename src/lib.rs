@@ -2,14 +2,14 @@
 
 mod ops;
 
-pub mod optimizer;
-pub use optimizer as optim;
+pub mod optimizers;
+pub use optimizers as optim;
 
-pub mod lr_scheduler;
+pub mod lr_schedulers;
 
-pub mod criterion;
+pub mod criterions;
 
-pub mod activation;
+pub mod activations;
 
 mod layers;
 pub use layers::*;

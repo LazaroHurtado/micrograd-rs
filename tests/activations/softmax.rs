@@ -1,6 +1,6 @@
 extern crate micrograd_rs;
 use approx::assert_abs_diff_eq;
-use micrograd_rs::activation as Activation;
+use micrograd_rs::activations as Activation;
 use micrograd_rs::prelude::*;
 use micrograd_rs::Layer;
 use ndarray::arr3;

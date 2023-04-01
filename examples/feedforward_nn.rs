@@ -1,6 +1,6 @@
 extern crate micrograd_rs;
-use micrograd_rs::activation as Activation;
-use micrograd_rs::criterion::{Criterion, Reduction, MSE};
+use micrograd_rs::activations as Activation;
+use micrograd_rs::criterions::{Criterion, Reduction, MSE};
 use micrograd_rs::optim::{Optimizer, SGD};
 use micrograd_rs::prelude::*;
 use micrograd_rs::{Layer, Linear, Sequential};
