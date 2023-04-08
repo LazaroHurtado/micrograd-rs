@@ -1,3 +1,3 @@
-mod weights;
+mod weights_init;
 
-pub use self::weights::WeightInit;
+pub use self::weights_init::*;

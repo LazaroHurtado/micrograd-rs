@@ -1,5 +1,6 @@
 use super::Layer;
-use crate::{prelude::*, utils::WeightInit};
+use crate::prelude::*;
+use crate::utils::{GlorotUniform, WeightInit};
 use ndarray::{concatenate, IntoDimension, RemoveAxis, Slice};
 
 pub type Conv1D = Convolution<Ix1, Ix3>;
@@ -49,7 +50,7 @@ where
         };
 
         let weights = Tensor::from_shape_simple_fn(weights_dim, || {
-            WeightInit::GlorotUniform.sample([in_channels, out_channels])
+            GlorotUniform.sample([in_channels, out_channels])
         });
         let biases = Tensor::from_shape_simple_fn(out_channels, Value::zero);
 

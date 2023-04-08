@@ -2,7 +2,7 @@ use std::ops::Add;
 
 use super::Layer;
 use crate::prelude::*;
-use crate::utils::WeightInit;
+use crate::utils::{GlorotUniform, WeightInit};
 
 pub struct Linear {
     name: String,
@@ -13,9 +13,8 @@ pub struct Linear {
 impl Linear {
     pub fn new(name: impl ToString, nin: usize, nout: usize) -> Self {
         let name = name.to_string();
-        let weights = Tensor::from_shape_simple_fn((nin, nout), || {
-            WeightInit::GlorotUniform.sample([nin, nout])
-        });
+        let weights =
+            Tensor::from_shape_simple_fn((nin, nout), || GlorotUniform.sample([nin, nout]));
         let biases = Tensor::from_shape_simple_fn(nout, Value::zero);
 
         Linear {
