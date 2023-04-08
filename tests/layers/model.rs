@@ -56,14 +56,16 @@ fn valid_save_and_load_state_dict_for_convolutional_model() {
     let pool_stride = (2, 1);
 
     let model1 = sequential!(
-        Ix3,
+        Ix4,
         [
             Conv2D::new(
                 name,
                 in_channels,
                 out_channels,
                 padding,
-                Filter::new((2, 2), (1, 1), (1, 1)),
+                (2, 2),
+                (1, 1),
+                (1, 1),
             ),
             AvgPool::new(pool_size, pool_stride, (0, 0), (1, 1)),
             Activation::Sigmoid
@@ -71,14 +73,16 @@ fn valid_save_and_load_state_dict_for_convolutional_model() {
     );
 
     let mut model2 = sequential!(
-        Ix3,
+        Ix4,
         [
             Conv2D::new(
                 name,
                 in_channels,
                 out_channels,
                 padding,
-                Filter::new((2, 2), (1, 1), (1, 1)),
+                (2, 2),
+                (1, 1),
+                (1, 1),
             ),
             AvgPool::new(pool_size, pool_stride, (0, 0), (1, 1)),
             Activation::Sigmoid

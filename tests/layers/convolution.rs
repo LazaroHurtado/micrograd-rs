@@ -1,6 +1,7 @@
 extern crate micrograd_rs;
+use approx::assert_abs_diff_eq;
 use micrograd_rs::prelude::*;
-use micrograd_rs::{Conv1D, Conv2D, Conv3D, Layer};
+use micrograd_rs::{Conv2D, Conv3D, Layer};
 
 #[test]
 fn conv_returns_valid_parameter_count() {
@@ -12,8 +13,10 @@ fn conv_returns_valid_parameter_count() {
         name,
         in_channels,
         out_channels,
+        (n, m, k),
         (0, 0, 0),
-        Filter::new((n, m, k), (1, 0, 0), (1, 1, 1)),
+        (1, 0, 0),
+        (1, 1, 1),
     );
 
     let parameters_per_kernel = in_channels * n * m * k;
@@ -25,54 +28,38 @@ fn conv_returns_valid_parameter_count() {
 }
 
 #[test]
-fn valid_conv1d_padding() {
-    let name = "conv1d";
-    let padding = 2;
-    let (in_channels, out_channels) = (1, 1);
+fn valid_convolution() {
+    let mut conv2d = Conv2D::new(1, 1, 1, (2, 2), (0, 0), (1, 1), (1, 1));
+    conv2d.weights =
+        Array4::from_shape_vec((1, 1, 2, 2), values![0.3954, -0.1740, -0.1890, 0.4909]).unwrap();
+    conv2d.biases = Tensor::from_vec(values!(-0.1188));
 
-    let conv1d = Conv1D::new(
-        name,
-        in_channels,
-        out_channels,
-        padding,
-        Filter::new(3, 2, 1),
-    );
-
-    let input = tensor![[1., 1., 1.]];
-    let padded_input = tensor![[0., 0., 1., 1., 1., 0., 0.]];
-
-    assert_eq!(conv1d.pad_input(&input), padded_input);
-}
-
-#[test]
-fn valid_conv2d_padding() {
-    let name = "conv2d";
-    let padding = (1, 2);
-    let (in_channels, out_channels) = (1, 1);
-
-    let conv2d = Conv2D::new(
-        name,
-        in_channels,
-        out_channels,
-        padding,
-        Filter::new((2, 2), (1, 1), (1, 1)),
-    );
-
-    let input = tensor![[[1., 2.], [3., 4.]], [[5., 6.], [7., 8.]]];
-    let padded_input = tensor![
-        [
-            [0., 0., 0., 0., 0., 0.],
-            [0., 0., 1., 2., 0., 0.],
-            [0., 0., 3., 4., 0., 0.],
-            [0., 0., 0., 0., 0., 0.]
+    let input = Array4::from_shape_vec(
+        (1, 1, 5, 4),
+        values![
+            -1.5237, 0.9591, -2.0597, 0.8249, -0.4506, -0.6975, 1.0153, -0.2838, -0.5344, -0.5019,
+            -0.4378, 0.3062, 0.0597, 1.4820, 0.4158, 1.4295, 0.0612, -0.4898, -0.2115, -0.4827
         ],
-        [
-            [0., 0., 0., 0., 0., 0.],
-            [0., 0., 5., 6., 0., 0.],
-            [0., 0., 7., 8., 0., 0.],
-            [0., 0., 0., 0., 0., 0.]
-        ]
+    )
+    .unwrap();
+
+    let outputs = conv2d.forward(&input).mapv(|v| v.value()).into_raw_vec();
+    let actuals = vec![
+        -1.14539373,
+        1.24905421,
+        -1.40794710,
+        -0.32098335,
+        -0.69131062,
+        0.56508859,
+        0.47345934,
+        -0.31705584,
+        0.27797043,
+        -0.60507223,
+        0.38358044,
+        -0.40010961,
     ];
 
-    assert_eq!(conv2d.pad_input(&input), padded_input);
+    for (output, actual) in outputs.into_iter().zip(actuals) {
+        assert_abs_diff_eq!(output, actual, epsilon = 1e-6);
+    }
 }

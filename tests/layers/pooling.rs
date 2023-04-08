@@ -14,7 +14,7 @@ fn shaped_tensor_from_iter<E, D: IntoDimension<Dim = E>>(iter: Range<u8>, shape:
 #[test]
 fn valid_max_pooling_1d() {
     let (channels, width) = (2, 3);
-    let input = shaped_tensor_from_iter(0..6, (channels, width));
+    let input = shaped_tensor_from_iter(0..6, (1, channels, width));
 
     let size = 2;
     let stride = 1;
@@ -27,7 +27,7 @@ fn valid_max_pooling_1d() {
 #[test]
 fn valid_max_pooling_2d() {
     let (channels, height, width) = (3, 4, 3);
-    let input = shaped_tensor_from_iter(0..36, (channels, height, width));
+    let input = shaped_tensor_from_iter(0..36, (1, channels, height, width));
 
     let size = (2, 2);
     let stride = (2, 1);
@@ -47,7 +47,7 @@ fn valid_max_pooling_2d() {
 #[test]
 fn valid_max_pooling_3d() {
     let (channels, depth, height, width) = (3, 2, 4, 3);
-    let input = shaped_tensor_from_iter(0..72, (channels, depth, height, width));
+    let input = shaped_tensor_from_iter(0..72, (1, channels, depth, height, width));
 
     let size = (2, 2, 2);
     let stride = (1, 2, 1);
@@ -63,7 +63,7 @@ fn valid_max_pooling_3d() {
 #[test]
 fn valid_avg_pooling_1d() {
     let (channels, width) = (2, 3);
-    let input = shaped_tensor_from_iter(0..6, (channels, width));
+    let input = shaped_tensor_from_iter(0..6, (1, channels, width));
 
     let size = 2;
     let stride = 1;
@@ -80,7 +80,7 @@ fn valid_avg_pooling_1d() {
 #[test]
 fn valid_avg_pooling_2d() {
     let (channels, height, width) = (3, 4, 3);
-    let input = shaped_tensor_from_iter(0..36, (channels, height, width));
+    let input = shaped_tensor_from_iter(0..36, (1, channels, height, width));
 
     let size = (2, 2);
     let stride = (2, 1);
@@ -96,7 +96,7 @@ fn valid_avg_pooling_2d() {
 #[test]
 fn valid_avg_pooling_3d() {
     let (channels, depth, height, width) = (3, 2, 4, 3);
-    let input = shaped_tensor_from_iter(0..72, (channels, depth, height, width));
+    let input = shaped_tensor_from_iter(0..72, (1, channels, depth, height, width));
 
     let size = (2, 2, 2);
     let stride = (1, 2, 1);
