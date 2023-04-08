@@ -17,18 +17,21 @@ pub trait PoolingFn<D: Dimension> {
 
 macro_rules! impl_layer_for_pool {
     [$($pooling: ident),+] => {
-        $(impl<C, D> Layer<C, C> for $pooling<D>
+        $(impl<SingleChannelDim, MultiChannelDim, BatchedDim> Layer<BatchedDim, BatchedDim> for $pooling<SingleChannelDim>
 where
-    C: Dimension<Smaller = D> + RemoveAxis,
-    D: Dimension<Larger = C>
+    BatchedDim: Dimension<Smaller = MultiChannelDim> + RemoveAxis,
+    MultiChannelDim: Dimension<Larger = BatchedDim, Smaller = SingleChannelDim> + RemoveAxis,
+    SingleChannelDim: Dimension<Larger = MultiChannelDim>
 {
-    fn forward(&self, input: &Tensor<C>) -> Tensor<C> {
+    fn forward(&self, input: &Tensor<BatchedDim>) -> Tensor<BatchedDim> {
         let mut output_channels = vec![];
 
-            for channel in input.outer_iter() {
+        for single_batch in input.outer_iter() {
+            for channel in single_batch.outer_iter() {
                 let pooled_channel = self.pool(channel.into_owned());
                 output_channels.append(&mut pooled_channel.into_raw_vec());
             }
+        }
 
         let output_dim = self.output_shape(&input.raw_dim());
         Tensor::from_shape_vec(output_dim, output_channels).unwrap()
