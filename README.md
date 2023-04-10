@@ -34,6 +34,8 @@ Any type of contribution is welcome as long as it adds value! i.e
   - ~~Dilation Support~~
   
   ## Loading a model from Pytorch
+  We need the convert state_dict() function to convert PyTorch tensors to lists because micrograd_rs can't unpickle PyTorch tensors. This conversion will allow micrograd_rs to load pytorch models without any issues.
+
 ```python
 # we need this import to serialize the model in a compatible format 
 import pickle

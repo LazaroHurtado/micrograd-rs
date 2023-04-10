@@ -1,5 +1,3 @@
-use num_traits::Pow;
-
 use super::Optimizer;
 use crate::prelude::*;
 
@@ -64,11 +62,11 @@ impl Optimizer for Adam {
             grad += param.value() * self.weight_decay;
 
             exp_avgs[i] = (beta1 * exp_avgs[i]) + ((1. - beta1) * grad);
-            exp_avg_sqs[i] = (beta2 * exp_avg_sqs[i]) + ((1. - beta2) * grad.pow(2));
+            exp_avg_sqs[i] = (beta2 * exp_avg_sqs[i]) + ((1. - beta2) * grad.powf(2.0));
 
             let t = 1 + (*time_step as i32);
-            let bias_correction1 = 1. - beta1.powi(t);
-            let bias_correction2 = 1. - beta2.powi(t);
+            let bias_correction1 = 1.0 - beta1.powi(t);
+            let bias_correction2 = 1.0 - beta2.powi(t);
 
             let step_size = self.lr.value() / bias_correction1;
 
