@@ -1,5 +1,3 @@
-use num_traits::Pow;
-
 use super::Optimizer;
 use crate::prelude::*;
 
@@ -58,12 +56,12 @@ impl Optimizer for RMSProp {
                 .value();
             grad += param.value() * self.weight_decay;
 
-            moving_avg[i] = (self.alpha * moving_avg[i]) + ((1. - self.alpha) * grad.pow(2));
+            moving_avg[i] = (self.alpha * moving_avg[i]) + ((1. - self.alpha) * grad.powf(2.0));
             let mut curr_moving_avg = moving_avg[i];
 
             if self.centered {
                 avg_gradients[i] = (self.alpha * avg_gradients[i]) + ((1. - self.alpha) * grad);
-                curr_moving_avg -= avg_gradients[i].pow(2);
+                curr_moving_avg -= avg_gradients[i].powf(2.0);
             }
 
             let momentum = self.momentum * prev_grads[i];
