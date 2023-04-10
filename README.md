@@ -22,7 +22,7 @@ Any type of contribution is welcome as long as it adds value! i.e
   - [~~Lecun~~](https://www.tensorflow.org/api_docs/python/tf/keras/initializers/LecunNormal)
 - [~~Create optimizer module for optimization algorithms~~](https://pytorch.org/docs/stable/optim.html)
   - [~~SGD~~](https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD)
-  - [Adam](https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam)
+  - [~~Adam~~](https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam)
   - [~~RMSProp~~](https://pytorch.org/docs/stable/generated/torch.optim.RMSprop.html#torch.optim.RMSprop)
 - Convolutional Neural Networks
   - [~~Convolutional Layer~~](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html)
