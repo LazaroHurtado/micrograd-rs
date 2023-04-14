@@ -1,6 +1,8 @@
+mod adam;
 mod rmsprop;
 mod sgd;
 
+pub use self::adam::Adam;
 pub use self::rmsprop::RMSProp;
 pub use self::sgd::SGD;
 pub use crate::value::Value;
