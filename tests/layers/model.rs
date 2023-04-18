@@ -64,8 +64,8 @@ fn valid_save_and_load_state_dict_for_convolutional_model() {
                 name,
                 in_channels,
                 out_channels,
-                padding,
                 (2, 2),
+                padding,
                 (1, 1),
                 (1, 1),
             ),
@@ -81,8 +81,8 @@ fn valid_save_and_load_state_dict_for_convolutional_model() {
                 name,
                 in_channels,
                 out_channels,
-                padding,
                 (2, 2),
+                padding,
                 (1, 1),
                 (1, 1),
             ),
@@ -119,7 +119,7 @@ fn valid_load_of_pytorch_convolutional_model() {
     let pool_size = (2, 2);
     let pool_stride = (2, 1);
 
-    let mut convoModel = sequential!(
+    let mut convo_model = sequential!(
         Ix4,
         [
             Conv2D::new(
@@ -135,10 +135,9 @@ fn valid_load_of_pytorch_convolutional_model() {
             Activation::Sigmoid
         ]
     );
+    convo_model.load_state_dict(path);
 
-    convoModel.load_state_dict(path);
-
-    assert_eq!(convo_state_dict, convoModel.state_dict());
+    assert_eq!(convo_state_dict, convo_model.state_dict());
 }
 
 #[test]
@@ -148,7 +147,7 @@ fn valid_load_of_pytorch_linear_model() {
     let linear_state_dict: IndexMap<String, Vec<f64>> =
             de::from_reader(file, DeOptions::new()).unwrap();
 
-    let mut linearModel = sequential!(
+    let mut linear_model = sequential!(
         Ix1,
         [
             Linear::new("fc1", 15, 20),
@@ -159,7 +158,7 @@ fn valid_load_of_pytorch_linear_model() {
             Activation::Tanh
         ]
     );
-    linearModel.load_state_dict(path);
+    linear_model.load_state_dict(path);
 
-    assert_eq!(linear_state_dict, linearModel.state_dict());
+    assert_eq!(linear_state_dict, linear_model.state_dict());
 }
