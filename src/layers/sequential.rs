@@ -17,7 +17,7 @@ macro_rules! sequential {
 }
 
 pub struct Sequential<D> {
-    layers: Vec<Box<dyn Layer<D, D>>>,
+    pub layers: Vec<Box<dyn Layer<D, D>>>,
 }
 
 impl<D, E> Sequential<D>
