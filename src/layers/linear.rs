@@ -5,16 +5,16 @@ use crate::prelude::*;
 use crate::utils::{GlorotUniform, WeightInit};
 
 pub struct Linear {
-    name: String,
-    weights: Tensor<Ix2>,
-    biases: Tensor<Ix1>,
+    pub name: String,
+    pub weights: Tensor<Ix2>,
+    pub biases: Tensor<Ix1>,
 }
 
 impl Linear {
     pub fn new(name: impl ToString, nin: usize, nout: usize) -> Self {
         let name = name.to_string();
         let weights =
-            Tensor::from_shape_simple_fn((nin, nout), || GlorotUniform.sample([nin, nout]));
+            Tensor::from_shape_simple_fn((nout, nin), || GlorotUniform.sample([nin, nout]));
         let biases = Tensor::from_shape_simple_fn(nout, Value::zero);
 
         Linear {
@@ -32,7 +32,7 @@ where
     Tensor<E>: Add<Tensor<Ix1>, Output = Tensor<D>>,
 {
     fn forward(&self, input: &Tensor<D>) -> Tensor<D> {
-        input.dot(&self.weights) + self.biases.clone()
+        input.dot(&self.weights.t().to_owned()) + self.biases.clone()
     }
 
     fn weights(&self) -> Tensor<Ix1> {

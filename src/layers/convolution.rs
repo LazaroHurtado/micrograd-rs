@@ -101,6 +101,7 @@ where
                 + 1;
             output_dim[ix + offset] = axis;
         }
+        output_dim[0] = self.out_channels;
 
         output_dim
     }
@@ -112,7 +113,9 @@ where
             size[ix] += (self.dilation[ix] - 1) * (size[ix] - 1);
         }
 
-        size.insert_axis(Axis(0))
+        let mut channeled_size = size.insert_axis(Axis(0));
+        channeled_size[0] = self.in_channels;
+        channeled_size
     }
 
     fn dilate_filter(&self, filter: &Tensor<MultiChannelDim>) -> Tensor<MultiChannelDim> {
@@ -128,7 +131,8 @@ where
         let output_shape = self.output_shape(&input_dim);
 
         let window_shape = self.window_shape();
-        let stride = self.stride.insert_axis(Axis(0));
+        let mut stride = self.stride.insert_axis(Axis(0));
+        stride[0] = self.in_channels;
 
         let mut output = vec![];
         let input = self.pad_input(&input.to_owned());
@@ -243,8 +247,8 @@ mod tests {
 
     #[test]
     fn valid_filter_output_size_for_input() {
-        let in_channels = 2;
-        let input = (1, in_channels, 7, 13);
+        let (in_channels, out_channels) = (2, 1);
+        let input = (in_channels, 7, 13);
 
         let (n, m) = (2, 3);
         let (padding, dilation, kernel_size, stride) = ((2, 2), (1, 1), (n, m), (1, 2));
@@ -252,7 +256,7 @@ mod tests {
         let conv2d = Conv2D::new(
             "conv2d",
             in_channels,
-            1,
+            out_channels,
             kernel_size,
             padding,
             stride,
@@ -260,13 +264,13 @@ mod tests {
         );
 
         let output_h =
-            ((input.2 + 2 * padding.0 - dilation.0 * (kernel_size.0 - 1) - 1) / stride.0) + 1;
+            ((input.1 + 2 * padding.0 - dilation.0 * (kernel_size.0 - 1) - 1) / stride.0) + 1;
         let output_w =
-            ((input.3 + 2 * padding.1 - dilation.1 * (kernel_size.1 - 1) - 1) / stride.1) + 1;
+            ((input.2 + 2 * padding.1 - dilation.1 * (kernel_size.1 - 1) - 1) / stride.1) + 1;
 
         assert_eq!(
             conv2d.output_shape(&Dim(input)).slice(),
-            [1, in_channels, output_h, output_w]
+            [out_channels, output_h, output_w]
         );
     }
 }
