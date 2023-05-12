@@ -29,7 +29,7 @@ fn conv_returns_valid_parameter_count() {
 
 #[test]
 fn valid_convolution() {
-    let mut conv2d = Conv2D::new(1, 1, 1, (2, 2), (0, 0), (1, 1), (1, 1));
+    let mut conv2d = Conv2D::new("conv2d", 1, 1, (2, 2), (0, 0), (1, 1), (1, 1));
     conv2d.weights =
         Array4::from_shape_vec((1, 1, 2, 2), values![0.3954, -0.1740, -0.1890, 0.4909]).unwrap();
     conv2d.biases = Tensor::from_vec(values!(-0.1188));
@@ -57,6 +57,50 @@ fn valid_convolution() {
         -0.60507223,
         0.38358044,
         -0.40010961,
+    ];
+
+    for (output, actual) in outputs.into_iter().zip(actuals) {
+        assert_abs_diff_eq!(output, actual, epsilon = 1e-6);
+    }
+}
+
+#[test]
+fn valid_two_channel_convolution() {
+    let mut conv2d = Conv2D::new("conv2d", 2, 3, (1, 1), (0, 0), (1, 1), (1, 1));
+    conv2d.weights = Array4::from_shape_vec(
+        (3, 2, 1, 1),
+        values![
+            -0.652845561504364,
+            0.6282326579093933,
+            0.29982179403305054,
+            0.03919875994324684,
+            0.6031246185302734,
+            -0.367204487323761
+        ],
+    )
+    .unwrap();
+    conv2d.biases = Tensor::from_vec(values![
+        0.6449103355407715,
+        -0.07897130399942398,
+        -0.5736885070800781
+    ]);
+
+    let input = Array4::from_shape_vec((1, 2, 2, 2), values![1, 2, 3, 4, 5, 6, 7, 8]).unwrap();
+
+    let outputs = conv2d.forward(&input).mapv(|v| v.value()).into_raw_vec();
+    let actuals = vec![
+        3.133228063583374,
+        3.1086151599884033,
+        3.0840022563934326,
+        3.059389352798462,
+        0.41684430837631226,
+        0.7558647990226746,
+        1.0948854684829712,
+        1.4339059591293335,
+        -1.8065862655639648,
+        -1.5706661939620972,
+        -1.3347461223602295,
+        -1.0988259315490723,
     ];
 
     for (output, actual) in outputs.into_iter().zip(actuals) {
