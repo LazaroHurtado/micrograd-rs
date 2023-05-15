@@ -18,3 +18,4 @@ indexmap = { version = "1.9.2", features = ["serde"] }
 
 [dev-dependencies]
 approx = "0.4"
+mnist = "0.5"
