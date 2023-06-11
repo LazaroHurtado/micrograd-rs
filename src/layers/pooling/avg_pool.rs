@@ -16,15 +16,10 @@ where
 {
     fn default() -> Self {
         let n = D::NDIM.unwrap();
+
         let zeros = D::zeros(n);
-        let ones = {
-            let mut ones = D::zeros(n);
-            let ones_slice = ones.slice_mut();
-            for ax in ones_slice.iter_mut().take(n) {
-                *ax = 1;
-            }
-            ones
-        };
+        let mut ones = D::zeros(n);
+        ones.slice_mut().fill(1);
 
         Self {
             size: ones.clone(),
